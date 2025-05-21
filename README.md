@@ -25,6 +25,7 @@ Both frontends interact with a **shared backend** built using modern enterprise-
 
 ### 🖥️ Backend
 - ☕ **Java 21**
+- ☕ **Kotlin**
 - 🌱 **Spring Boot**
 - 🐘 **Oracle Database**
 - 🔐 RESTful API, JPA (Hibernate), Spring Data
