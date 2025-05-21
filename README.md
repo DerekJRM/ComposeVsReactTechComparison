@@ -24,7 +24,7 @@ Both frontends interact with a **shared backend** built using modern enterprise-
 ## 🧪 Technologies Used
 
 ### 🖥️ Backend
-- ☕ **Java 17**
+- ☕ **Java 21**
 - 🌱 **Spring Boot**
 - 🐘 **Oracle Database**
 - 🔐 RESTful API, JPA (Hibernate), Spring Data
