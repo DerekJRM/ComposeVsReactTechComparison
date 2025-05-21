@@ -44,20 +44,20 @@ Both frontends interact with a **shared backend** built using modern enterprise-
 ## 📁 Project Structure
 
 ComposeVsReactMobileStudy/
-├── backend-spring-oracle/
-│ ├── src/
-│ └── README.md
+├── backend-spring-oracle/         # Java 21 + Spring Boot + Oracle DB
+│   ├── src/
+│   └── README.md
 │
-├── frontend-jetpack-compose/
-│ ├── app/
-│ └── README.md
+├── frontend-jetpack-compose/      # Android app using Jetpack Compose + Kotlin
+│   ├── app/
+│   └── README.md
 │
-├── frontend-react-native/
-│ ├── src/
-│ └── README.md
+├── frontend-react-native/         # Cross-platform app using React Native
+│   ├── src/
+│   └── README.md
 │
-└── docs/
-└── performance-results, analysis, and paper.pdf
+└── docs/                          # Paper, performance results, analysis
+    └── performance-report.pdf
 
 ---
 
@@ -79,10 +79,4 @@ ComposeVsReactMobileStudy/
   _joseph.leon.cabezas@est.una.ac.cr_
 
 _Escuela de Informática – Universidad Nacional, Heredia, Costa Rica_
-
----
-
-## 🧭 License
-
-MIT License – for educational and research purposes.
 
