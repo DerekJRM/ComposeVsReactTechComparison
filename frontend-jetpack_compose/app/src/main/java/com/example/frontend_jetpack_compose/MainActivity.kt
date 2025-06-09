@@ -1,8 +1,10 @@
 package com.example.frontend_jetpack_compose
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -10,15 +12,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
+import com.example.frontend_jetpack_compose.ui.components.MainScaffold
 import com.example.frontend_jetpack_compose.ui.theme.Frontendjetpack_composeTheme
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             Frontendjetpack_composeTheme {
-                // Aquí ponemos nuestra UI Compose
-                MainScreen()
+                val navController = rememberNavController()
+                MainScaffold(navController = navController)
             }
         }
     }
