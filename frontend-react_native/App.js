@@ -1,20 +1,38 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { View, Text, Button } from 'react-native'; // Importa los componentes necesarios
+import LoginScreen from './screens/LoginScreen';
+import ClienteScreen from './screens/ClienteDashboard/ClienteScreen';
+import RepartidorScreen from './screens/RepartidorDashboard/RepartidorScreen';
+import RestauranteScreen from './screens/RestauranteDashboard/RestauranteScreen';
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Hora de empezar!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+  const [usuario, setUsuario] = useState(null);
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+  const handleLogin = (user) => {
+    setUsuario(user);
+  };
+
+  const handleLogout = () => {
+    setUsuario(null);
+  };
+
+  if (usuario) {
+    switch (usuario.rol) {
+      case 'cliente':
+        return <ClienteScreen cliente={usuario} onLogout={handleLogout} />;
+      case 'repartidor':
+        return <RepartidorScreen repartidor={usuario} onLogout={handleLogout} />;
+      case 'restaurante':
+        return <RestauranteScreen restaurante={usuario} onLogout={handleLogout} />;
+      default:
+        return (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Text>Rol no reconocido</Text>
+            <Button title="Cerrar sesión" onPress={handleLogout} />
+          </View>
+        );
+    }
+  }
+
+  return <LoginScreen onLogin={handleLogin} />;
+}
