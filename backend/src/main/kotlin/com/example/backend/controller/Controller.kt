@@ -15,9 +15,9 @@ class Controller(
     private val repositoryCarrito: RepositoryCarrito,
     private val repositoryUsuario: RepositoryUsuario
 ) {
-    @GetMapping("/example")
+    @GetMapping("/obtenerUsuarios")
     fun getExample(): ResponseEntity<Any> {
-        return ResponseEntity.ok(repositoryCarrito.findAll())
+        return ResponseEntity.ok(repositoryUsuario.findAll())
     }
 
 

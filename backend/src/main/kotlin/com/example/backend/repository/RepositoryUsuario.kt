@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface RepositoryUsuario: JpaRepository<Usuario, Long> {
+    fun findByCorreo(correo: String): Usuario?
 }
