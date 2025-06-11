@@ -22,6 +22,10 @@ open class Usuario {
     open var correo: String? = null
 
     @Size(max = 100)
-    @Column(name = "\"CONTRASENA\"", length = 100)
+    @Column(name = "contrasena", length = 100)
     open var contrasena: String? = null
+
+    @Size(max = 20)
+    @Column(name = "ROL", length = 20, nullable = false)
+    open var rol: String? = null // Valores posibles: CLIENTE, REPARTIDOR, RESTAURANTE
 }

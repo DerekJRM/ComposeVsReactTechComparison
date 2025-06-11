@@ -81,3 +81,6 @@ CREATE TABLE Pago (
     idOrden NUMBER UNIQUE,
     FOREIGN KEY (idOrden) REFERENCES Orden(id)
 );
+
+ALTER TABLE Usuario ADD (
+    rol VARCHAR2(20) DEFAULT 'CLIENTE' NOT NULL);
