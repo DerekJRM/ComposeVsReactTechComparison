@@ -18,11 +18,11 @@ export default function App() {
 
   if (usuario) {
     switch (usuario.rol) {
-      case 'cliente':
+      case 'CLIENTE':
         return <ClienteScreen cliente={usuario} onLogout={handleLogout} />;
-      case 'repartidor':
+      case 'REPARTIDOR':
         return <RepartidorScreen repartidor={usuario} onLogout={handleLogout} />;
-      case 'restaurante':
+      case 'RESTAURANTE':
         return <RestauranteScreen restaurante={usuario} onLogout={handleLogout} />;
       default:
         return (

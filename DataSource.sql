@@ -22,16 +22,25 @@ INSERT INTO PROYECTO_MOVILES.repartidores VALUES
 INSERT INTO PROYECTO_MOVILES.repartidores VALUES 
 ('6-6666-6666', 'Pedro Navarro', 'pedro.navarro@ejemplo.com', 'Cartago, Occidental', '8888-6666', '4000765432567890', 'OCUPADO', 1.8, 8.7, 1000, 1500, 2);
 
--- Insertar COMBOS
-INSERT INTO PROYECTO_MOVILES.combos (restaurante_id, combo_num, precio) VALUES ('3101123456', 1, 3500);
-INSERT INTO PROYECTO_MOVILES.combos (restaurante_id, combo_num, precio) VALUES ('3101123456', 2, 4500);
-INSERT INTO PROYECTO_MOVILES.combos (restaurante_id, combo_num, precio) VALUES ('3101123456', 3, 5200);
-INSERT INTO PROYECTO_MOVILES.combos (restaurante_id, combo_num, precio) VALUES ('3101987654', 1, 6000);
-INSERT INTO PROYECTO_MOVILES.combos (restaurante_id, combo_num, precio) VALUES ('3101987654', 2, 7200);
-INSERT INTO PROYECTO_MOVILES.combos (restaurante_id, combo_num, precio) VALUES ('3101765432', 1, 4800);
-INSERT INTO PROYECTO_MOVILES.combos (restaurante_id, combo_num, precio) VALUES ('3101765432', 2, 5600);
-INSERT INTO PROYECTO_MOVILES.combos (restaurante_id, combo_num, precio) VALUES ('3101765432', 3, 5900);
-INSERT INTO PROYECTO_MOVILES.combos (restaurante_id, combo_num, precio) VALUES ('3101765432', 4, 6100);
+-- Insertar COMBOS con descripciones
+INSERT INTO PROYECTO_MOVILES.combos (restaurante_id, combo_num, precio, descripcion) VALUES 
+('3101123456', 1, 3500, 'Casado tradicional con carne, arroz, frijoles, plátano maduro, ensalada y tortillas');
+INSERT INTO PROYECTO_MOVILES.combos (restaurante_id, combo_num, precio, descripcion) VALUES 
+('3101123456', 2, 4500, 'Casado especial con pescado, arroz con camarones, frijoles, ensalada de aguacate y patacones');
+INSERT INTO PROYECTO_MOVILES.combos (restaurante_id, combo_num, precio, descripcion) VALUES 
+('3101123456', 3, 5200, 'Olla de carne completa con verduras, plátano, yuca y tortillas recién hechas');
+INSERT INTO PROYECTO_MOVILES.combos (restaurante_id, combo_num, precio, descripcion) VALUES 
+('3101987654', 1, 6000, 'Spaghetti a la boloñesa con carne molida, salsa de tomate casera y pan de ajo');
+INSERT INTO PROYECTO_MOVILES.combos (restaurante_id, combo_num, precio, descripcion) VALUES 
+('3101987654', 2, 7200, 'Lasagna de carne con capas de pasta, queso mozzarella y salsa bechamel');
+INSERT INTO PROYECTO_MOVILES.combos (restaurante_id, combo_num, precio, descripcion) VALUES 
+('3101765432', 1, 4800, 'Hamburguesa clásica con carne 100% res, queso, lechuga, tomate y papas fritas');
+INSERT INTO PROYECTO_MOVILES.combos (restaurante_id, combo_num, precio, descripcion) VALUES 
+('3101765432', 2, 5600, 'Hamburguesa BBQ con tocino, cebolla caramelizada, queso cheddar y aros de cebolla');
+INSERT INTO PROYECTO_MOVILES.combos (restaurante_id, combo_num, precio, descripcion) VALUES 
+('3101765432', 3, 5900, 'Hamburguesa vegetariana con portobello, queso de cabra y vegetales frescos');
+INSERT INTO PROYECTO_MOVILES.combos (restaurante_id, combo_num, precio, descripcion) VALUES 
+('3101765432', 4, 6100, 'Hamburguesa doble carne con queso americano, pepinillos y salsa especial');
 
 -- Insertar PEDIDOS
 INSERT INTO PROYECTO_MOVILES.pedidos (cliente_id, restaurante_id, repartidor_id, estado, fecha_pedido, fecha_entrega, subtotal, costo_transporte) 
@@ -68,5 +77,3 @@ INSERT INTO PROYECTO_MOVILES.usuarios VALUES ('6-6666-6666', 'REPARTIDOR', 'repa
 INSERT INTO PROYECTO_MOVILES.usuarios VALUES ('3101123456', 'RESTAURANTE', 'ticoRico123');
 INSERT INTO PROYECTO_MOVILES.usuarios VALUES ('3101987654', 'RESTAURANTE', 'pastafeliz456');
 INSERT INTO PROYECTO_MOVILES.usuarios VALUES ('3101765432', 'RESTAURANTE', 'zona506burgers');
-
-

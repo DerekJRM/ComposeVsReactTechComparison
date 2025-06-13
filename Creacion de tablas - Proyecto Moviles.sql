@@ -138,3 +138,6 @@ DROP CONSTRAINT SYS_C008717;
 -- 2. Agregar una nueva que sí acepte los tres roles
 ALTER TABLE PROYECTO_MOVILES.usuarios
 ADD CONSTRAINT chk_roles_usuario CHECK (rol IN ('CLIENTE', 'REPARTIDOR', 'RESTAURANTE'));
+
+ALTER TABLE PROYECTO_MOVILES.combos
+ADD descripcion VARCHAR2(200);

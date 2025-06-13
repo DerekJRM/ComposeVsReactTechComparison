@@ -1,13 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, Text, TouchableOpacity, View, Modal, TextInput, FlatList, Alert } from 'react-native';
+import { 
+  ScrollView, 
+  Text, 
+  TouchableOpacity, 
+  View, 
+  Modal, 
+  FlatList, 
+  Alert, 
+  Platform,
+  Dimensions
+} from 'react-native';
 import AuthButton from '../../components/AuthButton';
 import { styles } from '../../styles/globalStyles';
-import { usuarios } from '../../data/data';
+
+// Configuración de la API basada en la plataforma
+const getBaseUrl = () => {
+  if (Platform.OS === 'android') {
+    return 'http://192.168.100.4:8080'; // Ajusta esta IP para tu red local
+  } else if (Platform.OS === 'web') {
+    return 'http://localhost:8080'; // Para desarrollo web
+  }
+  return 'http://localhost:8080'; // iOS simulator u otros
+};
+
+const API_URL = `${getBaseUrl()}/api`;
+const isWeb = Platform.OS === 'web';
+const windowWidth = Dimensions.get('window').width;
 
 export default function ClienteScreen({ cliente, onLogout }) {
   // Estados
   const [restaurantes, setRestaurantes] = useState([]);
-  const [pedidoActual, setPedidoActual] = useState(null);
   const [restauranteSeleccionado, setRestauranteSeleccionado] = useState(null);
   const [combosSeleccionados, setCombosSeleccionados] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -15,214 +37,312 @@ export default function ClienteScreen({ cliente, onLogout }) {
   const [historialPedidos, setHistorialPedidos] = useState([]);
   const [repartidores, setRepartidores] = useState([]);
   const [factura, setFactura] = useState(null);
-  const [distanciaEntrega, setDistanciaEntrega] = useState(5); // Valor por defecto en km
+  const [combosRestaurante, setCombosRestaurante] = useState([]);
+  const [detallesComboModal, setDetallesComboModal] = useState(false);
+  const [comboSeleccionadoDetalle, setComboSeleccionadoDetalle] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   // Cargar datos iniciales
   useEffect(() => {
-    // Filtrar restaurantes, repartidores y pedidos del cliente
-    const restaurantesData = usuarios.filter(u => u.rol === 'restaurante');
-    const repartidoresData = usuarios.filter(u => u.rol === 'repartidor');
-    
-    setRestaurantes(restaurantesData);
-    setRepartidores(repartidoresData);
-    
-    // Simular historial de pedidos (en una app real esto vendría de una API)
-    const pedidosCliente = [
-      {
-        id: '001',
-        restaurante: 'Sabor Tico',
-        combos: [{numero: 1, cantidad: 2}],
-        estado: 'entregado',
-        fecha: '2023-05-15',
-        total: 8000
-      }
-    ];
-    setHistorialPedidos(pedidosCliente);
-  }, []);
+    cargarDatosIniciales();
+  }, [cliente]);
 
-  // Función para seleccionar restaurante
-  const seleccionarRestaurante = (restaurante) => {
-    if (cliente.estado !== 'activo') {
+  const cargarDatosIniciales = async () => {
+    try {
+      setLoading(true);
+      await Promise.all([
+        fetchRestaurantes(),
+        fetchRepartidores(),
+        cliente?.cedula && fetchPedidosCliente(cliente.cedula)
+      ]);
+    } catch (error) {
+      console.error('Error cargando datos iniciales:', error);
+      Alert.alert('Error', 'No se pudieron cargar los datos iniciales');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchRestaurantes = async () => {
+    try {
+      const response = await fetch(`${API_URL}/restaurantes`);
+      if (!response.ok) throw new Error('Error en la respuesta');
+      const data = await response.json();
+      setRestaurantes(data);
+    } catch (error) {
+      console.error('Error fetching restaurantes:', error);
+      throw error;
+    }
+  };
+
+  const fetchRepartidores = async () => {
+    try {
+      const response = await fetch(`${API_URL}/repartidores`);
+      if (!response.ok) throw new Error('Error en la respuesta');
+      const data = await response.json();
+      setRepartidores(data);
+    } catch (error) {
+      console.error('Error fetching repartidores:', error);
+      throw error;
+    }
+  };
+
+  const fetchPedidosCliente = async (cedula) => {
+    try {
+      const response = await fetch(`${API_URL}/clientes/${cedula}/pedidos`);
+      if (!response.ok) throw new Error('Error en la respuesta');
+      const data = await response.json();
+      setHistorialPedidos(data);
+    } catch (error) {
+      console.error('Error fetching pedidos:', error);
+      throw error;
+    }
+  };
+
+  const fetchCombosRestaurante = async (cedulaJuridica) => {
+    try {
+      const response = await fetch(`${API_URL}/restaurantes/${cedulaJuridica}/combos`);
+      if (!response.ok) throw new Error('Error en la respuesta');
+      const data = await response.json();
+      setCombosRestaurante(data);
+    } catch (error) {
+      console.error('Error fetching combos:', error);
+      throw error;
+    }
+  };
+
+  const seleccionarRestaurante = async (restaurante) => {
+    /*
+    if (cliente.estado !== 'ACTIVO') {
       Alert.alert('Cuenta suspendida', 'Su cuenta está suspendida y no puede realizar pedidos.');
       return;
     }
-    setRestauranteSeleccionado(restaurante);
-    setModalVisible(true);
+    */
+    try {
+      setLoading(true);
+      setRestauranteSeleccionado(restaurante);
+      await fetchCombosRestaurante(restaurante.cedulaJuridica);
+      setModalVisible(true);
+    } catch (error) {
+      Alert.alert('Error', 'No se pudieron cargar los combos del restaurante');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Función para agregar combo al pedido
   const agregarCombo = (combo) => {
-    const existente = combosSeleccionados.find(c => c.numero === combo.numero);
+    const existente = combosSeleccionados.find(c => c.id === combo.id);
     
     if (existente) {
       setCombosSeleccionados(combosSeleccionados.map(c => 
-        c.numero === combo.numero ? {...c, cantidad: c.cantidad + 1} : c
+        c.id === combo.id ? {...c, cantidad: c.cantidad + 1} : c
       ));
     } else {
       setCombosSeleccionados([...combosSeleccionados, {...combo, cantidad: 1}]);
     }
   };
 
-  // Función para quitar combo del pedido
-  const quitarCombo = (comboNumero) => {
-    const existente = combosSeleccionados.find(c => c.numero === comboNumero);
+  const quitarCombo = (comboId) => {
+    const existente = combosSeleccionados.find(c => c.id === comboId);
     
     if (existente && existente.cantidad > 1) {
       setCombosSeleccionados(combosSeleccionados.map(c => 
-        c.numero === comboNumero ? {...c, cantidad: c.cantidad - 1} : c
+        c.id === comboId ? {...c, cantidad: c.cantidad - 1} : c
       ));
     } else {
-      setCombosSeleccionados(combosSeleccionados.filter(c => c.numero !== comboNumero));
+      setCombosSeleccionados(combosSeleccionados.filter(c => c.id !== comboId));
     }
   };
 
-  // Función para realizar el pedido
-  const realizarPedido = () => {
+  const realizarPedido = async () => {
     if (combosSeleccionados.length === 0) {
       Alert.alert('Pedido vacío', 'Por favor seleccione al menos un combo.');
       return;
     }
 
-    // Calcular subtotal
-    const subtotal = combosSeleccionados.reduce((total, combo) => 
-      total + (combo.precio * combo.cantidad), 0);
+    try {
+      setLoading(true);
+      
+      // Encontrar repartidor disponible con menos de 4 amonestaciones
+      const repartidorDisponible = repartidores.find(r => 
+        r.estado === 'DISPONIBLE' && (r.amonestaciones === null || r.amonestaciones < 4));
 
-    // Encontrar repartidor disponible con menos de 4 amonestaciones
-    const repartidorDisponible = repartidores.find(r => 
-      r.estado === 'disponible' && r.amonestaciones < 4);
+      if (!repartidorDisponible) {
+        Alert.alert('No hay repartidores', 'No hay repartidores disponibles en este momento.');
+        return;
+      }
 
-    if (!repartidorDisponible) {
-      Alert.alert('No hay repartidores', 'No hay repartidores disponibles en este momento.');
-      return;
+      // Calcular subtotal
+      const subtotal = combosSeleccionados.reduce((total, combo) => 
+        total + (combo.precio * combo.cantidad), 0);
+
+      // Crear el objeto pedido según tu modelo de backend
+      const pedidoData = {
+        clienteId: cliente.cedula,
+        restauranteId: restauranteSeleccionado.cedulaJuridica,
+        repartidorId: repartidorDisponible.cedula,
+        estado: 'EN_PREPARACION',
+        subtotal: subtotal,
+        costoTransporte: 5 * (repartidorDisponible.costoKmHabil || 1000), // Distancia fija de 5km
+        combos: combosSeleccionados.map(combo => ({
+          comboId: combo.id,
+          cantidad: combo.cantidad,
+          precioUnit: combo.precio
+        }))
+      };
+
+      // Enviar pedido al backend
+      const response = await fetch(`${API_URL}/pedidos`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(pedidoData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al crear el pedido');
+      }
+
+      const nuevoPedido = await response.json();
+      
+      // Obtener la factura asociada (asumiendo que tu backend la genera automáticamente)
+      const facturaResponse = await fetch(`${API_URL}/pedidos/${nuevoPedido.id}/factura`);
+      if (facturaResponse.ok) {
+        const facturaData = await facturaResponse.json();
+        setFactura(facturaData);
+      }
+
+      // Actualizar el historial de pedidos
+      await fetchPedidosCliente(cliente.cedula);
+      
+      // Cerrar modal y resetear selecciones
+      setModalVisible(false);
+      setModalFacturaVisible(true);
+      setCombosSeleccionados([]);
+      setRestauranteSeleccionado(null);
+    } catch (error) {
+      console.error('Error al realizar pedido:', error);
+      Alert.alert('Error', 'No se pudo completar el pedido');
+    } finally {
+      setLoading(false);
     }
-
-    // Calcular costo de transporte (asumimos día hábil)
-    const costoTransporte = distanciaEntrega * repartidorDisponible.costoPorKm.habil;
-    
-    // Calcular IVA (13%)
-    const iva = (subtotal + costoTransporte) * 0.13;
-    
-    // Calcular total
-    const total = subtotal + costoTransporte + iva;
-
-    // Crear factura
-    const nuevaFactura = {
-      id: `FAC-${Date.now()}`,
-      fecha: new Date().toISOString(),
-      cliente: cliente.nombre,
-      restaurante: restauranteSeleccionado.nombre,
-      repartidor: repartidorDisponible.nombre,
-      combos: [...combosSeleccionados],
-      subtotal,
-      costoTransporte,
-      iva,
-      total,
-      estado: 'en preparación'
-    };
-
-    // Crear pedido
-    const nuevoPedido = {
-      id: `PED-${Date.now()}`,
-      restaurante: restauranteSeleccionado.nombre,
-      combos: combosSeleccionados.map(c => ({numero: c.numero, cantidad: c.cantidad})),
-      estado: 'en preparación',
-      fecha: new Date().toISOString(),
-      total,
-      repartidor: repartidorDisponible.nombre
-    };
-
-    // Actualizar estados
-    setFactura(nuevaFactura);
-    setHistorialPedidos([...historialPedidos, nuevoPedido]);
-    setPedidoActual(nuevoPedido);
-    
-    // Actualizar repartidor a ocupado
-    const repartidoresActualizados = repartidores.map(r => 
-      r.cedula === repartidorDisponible.cedula ? {...r, estado: 'ocupado'} : r
-    );
-    setRepartidores(repartidoresActualizados);
-    
-    // Cerrar modal y resetear selecciones
-    setModalVisible(false);
-    setModalFacturaVisible(true);
-    setCombosSeleccionados([]);
-    setRestauranteSeleccionado(null);
   };
 
-  // Función para cancelar pedido
   const cancelarPedido = () => {
     setCombosSeleccionados([]);
     setRestauranteSeleccionado(null);
     setModalVisible(false);
   };
 
-  // Función para calificar repartidor
-  const calificarRepartidor = (pedidoId, calificacion) => {
-    // En una app real, esto actualizaría el backend
-    Alert.alert('Calificación enviada', `Gracias por calificar con ${calificacion} estrellas.`);
-    
-    // Marcar pedido como calificado
-    setHistorialPedidos(historialPedidos.map(p => 
-      p.id === pedidoId ? {...p, calificado: true} : p
-    ));
+  const calificarRepartidor = async (pedidoId, calificacion) => {
+    try {
+      setLoading(true);
+      const quejaData = {
+        repartidorId: historialPedidos.find(p => p.id === pedidoId)?.repartidorId,
+        clienteId: cliente.cedula,
+        descripcion: `Calificación: ${calificacion} estrellas`
+      };
+
+      const response = await fetch(`${API_URL}/quejas`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(quejaData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al enviar calificación');
+      }
+
+      Alert.alert('Calificación enviada', `Gracias por calificar con ${calificacion} estrellas.`);
+      await fetchPedidosCliente(cliente.cedula);
+    } catch (error) {
+      console.error('Error al calificar:', error);
+      Alert.alert('Error', 'No se pudo enviar la calificación');
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // Estilos dinámicos para diferentes plataformas
+  const dynamicStyles = {
+    modalContent: {
+      backgroundColor: 'white',
+      borderRadius: 10,
+      padding: 20,
+      width: isWeb ? (windowWidth > 600 ? '60%' : '90%') : '90%',
+      maxWidth: 500,
+      maxHeight: isWeb ? '80vh' : undefined,
+    },
+    restauranteCard: {
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      padding: 15,
+      marginBottom: 15,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+      width: isWeb ? (windowWidth > 600 ? '48%' : '100%') : '100%',
+    },
+    restaurantesContainer: {
+      flexDirection: isWeb ? 'row' : 'column',
+      flexWrap: isWeb ? 'wrap' : 'nowrap',
+      justifyContent: isWeb ? 'space-between' : 'flex-start',
+    },
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Cargando...</Text>
+      </View>
+    );
+  }
+
   return (
-    <ScrollView contentContainerStyle={styles.dashboardContainer}>
-      <Text style={styles.bienvenida}>Hola {cliente.nombre}, escoge tu restaurante</Text>
-      <Text style={styles.infoText}>Estado: {cliente.estado}</Text>
-      
-      {/* Lista de restaurantes */}
-      <Text style={styles.sectionTitle}>Restaurantes disponibles</Text>
-      <FlatList
-        data={restaurantes}
-        keyExtractor={(item) => item.cedula}
-        renderItem={({item}) => (
-          <TouchableOpacity 
-            style={styles.restauranteCard}
-            onPress={() => seleccionarRestaurante(item)}
-          >
-            <Text style={styles.restauranteNombre}>{item.nombre}</Text>
-            <Text style={styles.restauranteTipo}>Tipo: {item.tipoComida}</Text>
-            <Text style={styles.restauranteDireccion}>{item.direccion}</Text>
-          </TouchableOpacity>
-        )}
-      />
-      
-      {/* Historial de pedidos */}
-      <Text style={styles.sectionTitle}>Tus pedidos recientes</Text>
-      {historialPedidos.length > 0 ? (
+    <View style={styles.container}>
+      {/* Encabezado */}
+      <View style={styles.header}>
+        <Text style={styles.bienvenida}>Hola {cliente.nombre}</Text>
+        <Text style={styles.estadoCliente}>Estado: {cliente.estado}</Text>
+      </View>
+
+      {/* Lista de restaurantes - SOLUCIÓN PRINCIPAL */}
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>Restaurantes disponibles</Text>
+        <FlatList
+          data={restaurantes}
+          keyExtractor={(item) => item.cedulaJuridica}
+          renderItem={({ item }) => (
+            <RestauranteCard 
+              item={item} 
+              onPress={() => seleccionarRestaurante(item)} 
+            />
+          )}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>No hay restaurantes disponibles</Text>
+          }
+        />
+      </View>
+
+      {/* Historial de pedidos - SIN SCROLLVIEW ANIDADO */}
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>Tus pedidos recientes</Text>
         <FlatList
           data={historialPedidos}
-          keyExtractor={(item) => item.id}
-          renderItem={({item}) => (
-            <View style={styles.pedidoCard}>
-              <Text style={styles.pedidoRestaurante}>{item.restaurante}</Text>
-              <Text>Estado: {item.estado}</Text>
-              <Text>Total: ₡{item.total.toLocaleString()}</Text>
-              <Text>Fecha: {new Date(item.fecha).toLocaleDateString()}</Text>
-              
-              {item.estado === 'entregado' && !item.calificado && (
-                <View style={styles.calificacionContainer}>
-                  <Text>Califica al repartidor:</Text>
-                  <View style={styles.estrellasContainer}>
-                    {[1, 2, 3, 4, 5].map(star => (
-                      <TouchableOpacity 
-                        key={star}
-                        onPress={() => calificarRepartidor(item.id, star)}
-                      >
-                        <Text style={styles.estrella}>★</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-              )}
-            </View>
-          )}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => <PedidoCard item={item} />}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>No tienes pedidos recientes</Text>
+          }
         />
-      ) : (
-        <Text style={styles.noItemsText}>No tienes pedidos recientes</Text>
-      )}
+      </View>
       
       {/* Modal para seleccionar combos */}
       <Modal
@@ -232,40 +352,53 @@ export default function ClienteScreen({ cliente, onLogout }) {
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
+          <View style={dynamicStyles.modalContent}>
             {restauranteSeleccionado && (
               <>
-                <Text style={styles.modalTitle}>{restauranteSeleccionado.nombre}</Text>
-                <Text style={styles.modalSubtitle}>Combos disponibles</Text>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>{restauranteSeleccionado.nombre}</Text>
+                  <Text style={styles.modalSubtitle}>Combos disponibles</Text>
+                </View>
                 
                 <FlatList
-                  data={restauranteSeleccionado.combos}
-                  keyExtractor={(item) => item.numero.toString()}
+                  data={combosRestaurante}
+                  keyExtractor={(item) => item.id.toString()}
                   renderItem={({item}) => (
                     <View style={styles.comboItem}>
-                      <View style={styles.comboInfo}>
-                        <Text style={styles.comboNombre}>Combo #{item.numero}</Text>
-                        <Text>{item.descripcion}</Text>
-                        <Text style={styles.comboPrecio}>₡{item.precio.toLocaleString()}</Text>
-                      </View>
+                      <TouchableOpacity onPress={() => setComboSeleccionadoDetalle(item)}>
+                        <View style={styles.comboInfo}>
+                          <View style={styles.comboTextInfo}>
+                            <Text style={styles.comboNombre}>Combo #{item.comboNum}</Text>
+                            <Text style={styles.comboDescripcion} numberOfLines={1}>
+                              {item.descripcion || 'Delicioso combo'}
+                            </Text>
+                            <Text style={styles.comboPrecio}>₡{item.precio?.toLocaleString() || '0'}</Text>
+                            {item.ingredientes && (
+                              <Text style={styles.comboIngredientes}>
+                                Ingredientes: {item.ingredientes}
+                              </Text>
+                            )}
+                          </View>
+                        </View>
+                      </TouchableOpacity>
                       
                       <View style={styles.comboActions}>
                         <TouchableOpacity 
                           style={styles.comboButton}
-                          onPress={() => quitarCombo(item.numero)}
+                          onPress={() => quitarCombo(item.id)}
                         >
-                          <Text>-</Text>
+                          <Text style={styles.comboButtonText}>-</Text>
                         </TouchableOpacity>
                         
                         <Text style={styles.comboCantidad}>
-                          {combosSeleccionados.find(c => c.numero === item.numero)?.cantidad || 0}
+                          {combosSeleccionados.find(c => c.id === item.id)?.cantidad || 0}
                         </Text>
                         
                         <TouchableOpacity 
                           style={styles.comboButton}
                           onPress={() => agregarCombo(item)}
                         >
-                          <Text>+</Text>
+                          <Text style={styles.comboButtonText}>+</Text>
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -277,17 +410,24 @@ export default function ClienteScreen({ cliente, onLogout }) {
                   {combosSeleccionados.length > 0 ? (
                     <>
                       {combosSeleccionados.map(combo => (
-                        <Text key={combo.numero}>
-                          {combo.cantidad}x Combo #{combo.numero} - ₡{(combo.precio * combo.cantidad).toLocaleString()}
-                        </Text>
+                        <View key={combo.id} style={styles.resumenItem}>
+                          <Text style={styles.resumenItemText}>
+                            {combo.cantidad}x Combo #{combo.comboNum}
+                          </Text>
+                          <Text style={styles.resumenItemPrecio}>
+                            ₡{(combo.precio * combo.cantidad).toLocaleString()}
+                          </Text>
+                        </View>
                       ))}
-                      <Text style={styles.resumenTotal}>
-                        Subtotal: ₡{combosSeleccionados.reduce((total, combo) => 
-                          total + (combo.precio * combo.cantidad), 0).toLocaleString()}
-                      </Text>
+                      <View style={styles.resumenTotalContainer}>
+                        <Text style={styles.resumenTotal}>
+                          Subtotal: ₡{combosSeleccionados.reduce((total, combo) => 
+                            total + (combo.precio * combo.cantidad), 0).toLocaleString()}
+                        </Text>
+                      </View>
                     </>
                   ) : (
-                    <Text>No has seleccionado combos</Text>
+                    <Text style={styles.noItemsText}>No has seleccionado combos</Text>
                   )}
                 </View>
                 
@@ -298,10 +438,57 @@ export default function ClienteScreen({ cliente, onLogout }) {
                     style={styles.secondaryButton}
                   />
                   <AuthButton 
-                    title="Realizar pedido"
+                    title={loading ? "Procesando..." : "Realizar pedido"}
                     onPress={realizarPedido}
                     style={styles.primaryButton}
+                    disabled={combosSeleccionados.length === 0 || loading}
                   />
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
+      
+      {/* Modal de detalles del combo */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={!!comboSeleccionadoDetalle}
+        onRequestClose={() => setComboSeleccionadoDetalle(null)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={dynamicStyles.modalContent}>
+            {comboSeleccionadoDetalle && (
+              <>
+                <Text style={styles.modalTitle}>Combo #{comboSeleccionadoDetalle.comboNum}</Text>
+                <Text style={styles.comboDetallePrecio}>
+                  ₡{comboSeleccionadoDetalle.precio?.toLocaleString() || '0'}
+                </Text>
+                <Text style={styles.comboDetalleDescripcion}>
+                  {comboSeleccionadoDetalle.descripcion || 'Descripción no disponible'}
+                </Text>
+                <Text style={styles.comboDetalleIngredientes}>
+                  Ingredientes: {comboSeleccionadoDetalle.ingredientes || 'No especificado'}
+                </Text>
+                
+                <View style={styles.comboDetalleActions}>
+                  <TouchableOpacity 
+                    style={styles.comboDetalleButton}
+                    onPress={() => {
+                      agregarCombo(comboSeleccionadoDetalle);
+                      setComboSeleccionadoDetalle(null);
+                    }}
+                  >
+                    <Text style={styles.comboDetalleButtonText}>Agregar al pedido</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.comboDetalleCloseButton}
+                    onPress={() => setComboSeleccionadoDetalle(null)}
+                  >
+                    <Text style={styles.comboDetalleCloseButtonText}>Cerrar</Text>
+                  </TouchableOpacity>
                 </View>
               </>
             )}
@@ -317,30 +504,63 @@ export default function ClienteScreen({ cliente, onLogout }) {
         onRequestClose={() => setModalFacturaVisible(false)}
       >
         <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
+          <View style={dynamicStyles.modalContent}>
             {factura && (
               <>
-                <Text style={styles.modalTitle}>Factura #{factura.id}</Text>
-                <Text>Fecha: {new Date(factura.fecha).toLocaleString()}</Text>
-                <Text>Cliente: {factura.cliente}</Text>
-                <Text>Restaurante: {factura.restaurante}</Text>
-                <Text>Repartidor: {factura.repartidor}</Text>
+                <Text style={styles.modalTitle}>¡Pedido realizado con éxito!</Text>
+                <Text style={styles.facturaNumero}>Factura #{factura.id}</Text>
+                <Text style={styles.facturaFecha}>
+                  Fecha: {new Date(factura.fechaPedido).toLocaleString()}
+                </Text>
                 
-                <Text style={styles.sectionTitle}>Detalle del pedido:</Text>
-                {factura.combos.map(combo => (
-                  <Text key={combo.numero}>
-                    {combo.cantidad}x Combo #{combo.numero} - ₡{(combo.precio * combo.cantidad).toLocaleString()}
-                  </Text>
-                ))}
-                
-                <View style={styles.facturaTotales}>
-                  <Text>Subtotal: ₡{factura.subtotal.toLocaleString()}</Text>
-                  <Text>Transporte ({distanciaEntrega}km): ₡{factura.costoTransporte.toLocaleString()}</Text>
-                  <Text>IVA (13%): ₡{factura.iva.toLocaleString()}</Text>
-                  <Text style={styles.facturaTotal}>Total: ₡{factura.total.toLocaleString()}</Text>
+                <View style={styles.facturaInfoContainer}>
+                  <Text style={styles.facturaLabel}>Cliente:</Text>
+                  <Text style={styles.facturaValue}>{factura.cliente}</Text>
+                  
+                  <Text style={styles.facturaLabel}>Restaurante:</Text>
+                  <Text style={styles.facturaValue}>{factura.restaurante}</Text>
+                  
+                  <Text style={styles.facturaLabel}>Repartidor:</Text>
+                  <Text style={styles.facturaValue}>{factura.repartidor || 'Asignado'}</Text>
                 </View>
                 
-                <Text style={styles.estadoPedido}>Estado: {factura.estado}</Text>
+                <View style={styles.facturaTotales}>
+                  <View style={styles.facturaLineItem}>
+                    <Text style={styles.facturaLineLabel}>Subtotal:</Text>
+                    <Text style={styles.facturaLineValue}>
+                      ₡{factura.subtotal?.toLocaleString() || '0'}
+                    </Text>
+                  </View>
+                  
+                  <View style={styles.facturaLineItem}>
+                    <Text style={styles.facturaLineLabel}>Transporte:</Text>
+                    <Text style={styles.facturaLineValue}>
+                      ₡{factura.costoTransporte?.toLocaleString() || '0'}
+                    </Text>
+                  </View>
+                  
+                  <View style={styles.facturaLineItem}>
+                    <Text style={styles.facturaLineLabel}>IVA (13%):</Text>
+                    <Text style={styles.facturaLineValue}>
+                      ₡{factura.iva?.toLocaleString() || '0'}
+                    </Text>
+                  </View>
+                  
+                  <View style={[styles.facturaLineItem, styles.facturaTotalItem]}>
+                    <Text style={styles.facturaTotalLabel}>Total:</Text>
+                    <Text style={styles.facturaTotalValue}>
+                      ₡{factura.total?.toLocaleString() || '0'}
+                    </Text>
+                  </View>
+                </View>
+                
+                <Text style={styles.estadoPedido}>
+                  Estado: {factura.estado?.replace('_', ' ') || 'Estado desconocido'}
+                </Text>
+                
+                <Text style={styles.facturaTiempoEstimado}>
+                  Tiempo estimado de entrega: 30-45 minutos
+                </Text>
                 
                 <AuthButton 
                   title="Cerrar"
@@ -359,6 +579,27 @@ export default function ClienteScreen({ cliente, onLogout }) {
         style={styles.logoutButton}
         textStyle={styles.logoutButtonText}
       />
-    </ScrollView>
+    </View>
   );
 }
+
+// Componentes adicionales para mejor organización
+const RestauranteCard = ({ item, onPress }) => (
+  <TouchableOpacity style={styles.restauranteCard} onPress={onPress}>
+    <View style={styles.restauranteInfo}>
+      <Text style={styles.restauranteNombre}>{item.nombre}</Text>
+      <Text style={styles.restauranteDetalle}>{item.tipoComida}</Text>
+      <Text style={styles.restauranteDetalle}>{item.direccion}</Text>
+      <Text style={styles.restauranteDetalle}>Teléfono: {item.telefono}</Text>
+    </View>
+  </TouchableOpacity>
+);
+
+const PedidoCard = ({ item }) => (
+  <View style={styles.pedidoCard}>
+    <Text style={styles.pedidoId}>Pedido #{item.id}</Text>
+    <Text>Estado: {item.estado}</Text>
+    <Text>Total: ₡{item.total?.toLocaleString()}</Text>
+    <Text>Fecha: {new Date(item.fechaPedido).toLocaleDateString()}</Text>
+  </View>
+);

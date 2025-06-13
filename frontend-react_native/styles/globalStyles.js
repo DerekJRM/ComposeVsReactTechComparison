@@ -546,4 +546,413 @@ pedidoId: {
   fontSize: 16,
   marginBottom: 5,
 },
+container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dashboardContainer: {
+    flexGrow: 1,
+    padding: 16,
+  },
+  bienvenida: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  infoText: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 16,
+    marginBottom: 12,
+  },
+  restauranteInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  restauranteImagen: {
+    width: 80,
+    height: 80,
+    borderRadius: 10,
+    marginRight: 15,
+  },
+  restauranteInfoText: {
+    flex: 1,
+  },
+  restauranteNombre: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  restauranteTipo: {
+    color: '#666',
+    fontSize: 14,
+  },
+  restauranteDireccion: {
+    color: '#666',
+    fontSize: 14,
+  },
+  restauranteRating: {
+    color: '#FFD700',
+    fontWeight: 'bold',
+  },
+  pedidoCard: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  pedidoRestaurante: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  calificacionContainer: {
+    marginTop: 10,
+  },
+  estrellasContainer: {
+    flexDirection: 'row',
+    marginTop: 5,
+  },
+  estrella: {
+    fontSize: 24,
+    color: '#ddd',
+    marginRight: 5,
+  },
+  estrellaSeleccionada: {
+    color: '#FFD700',
+  },
+  noItemsText: {
+    textAlign: 'center',
+    color: '#666',
+    marginTop: 20,
+    fontStyle: 'italic',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalHeader: {
+    marginBottom: 15,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    color: '#666',
+  },
+  comboItem: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  comboInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  comboImagen: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 10,
+  },
+  comboTextInfo: {
+    flex: 1,
+  },
+  comboNombre: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  comboDescripcion: {
+    color: '#666',
+    fontSize: 14,
+  },
+  comboPrecio: {
+    fontWeight: 'bold',
+    color: '#2ecc71',
+  },
+  comboActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  comboButton: {
+    backgroundColor: '#f0f0f0',
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  comboButtonText: {
+    fontSize: 18,
+  },
+  comboCantidad: {
+    marginHorizontal: 10,
+    fontSize: 16,
+  },
+  resumenPedido: {
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    padding: 15,
+    marginTop: 15,
+  },
+  resumenTitle: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  resumenItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 5,
+  },
+  resumenItemText: {
+    flex: 2,
+  },
+  resumenItemPrecio: {
+    flex: 1,
+    textAlign: 'right',
+  },
+  resumenTotalContainer: {
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+    marginTop: 10,
+    paddingTop: 10,
+  },
+  resumenTotal: {
+    fontWeight: 'bold',
+    textAlign: 'right',
+    fontSize: 16,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  primaryButton: {
+    backgroundColor: '#2ecc71',
+    padding: 12,
+    borderRadius: 8,
+    flex: 1,
+    marginLeft: 10,
+  },
+  secondaryButton: {
+    backgroundColor: '#e74c3c',
+    padding: 12,
+    borderRadius: 8,
+    flex: 1,
+    marginRight: 10,
+  },
+  comboDetalleImagen: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+  comboDetallePrecio: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#2ecc71',
+    marginBottom: 10,
+  },
+  comboDetalleDescripcion: {
+    fontSize: 16,
+    marginBottom: 10,
+    lineHeight: 24,
+  },
+  comboDetalleIngredientes: {
+    fontStyle: 'italic',
+    color: '#666',
+    marginBottom: 20,
+  },
+  comboDetalleActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  comboDetalleButton: {
+    backgroundColor: '#2ecc71',
+    padding: 12,
+    borderRadius: 8,
+    flex: 1,
+    marginRight: 10,
+  },
+  comboDetalleButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  comboDetalleCloseButton: {
+    backgroundColor: '#e74c3c',
+    padding: 12,
+    borderRadius: 8,
+    flex: 1,
+  },
+  comboDetalleCloseButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  facturaNumero: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  facturaFecha: {
+    color: '#666',
+    marginBottom: 15,
+  },
+  facturaInfoContainer: {
+    marginBottom: 15,
+  },
+  facturaLabel: {
+    fontWeight: 'bold',
+  },
+  facturaValue: {
+    marginBottom: 8,
+  },
+  facturaTotales: {
+    marginBottom: 15,
+  },
+  facturaLineItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 5,
+  },
+  facturaLineLabel: {
+    fontWeight: 'bold',
+  },
+  facturaLineValue: {
+    fontWeight: 'bold',
+  },
+  facturaTotalItem: {
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+    paddingTop: 10,
+    marginTop: 5,
+  },
+  facturaTotalLabel: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  facturaTotalValue: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    color: '#2ecc71',
+  },
+  estadoPedido: {
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  facturaTiempoEstimado: {
+    textAlign: 'center',
+    marginVertical: 15,
+    fontStyle: 'italic',
+    color: '#e67e22',
+  },
+  logoutButton: {
+    backgroundColor: '#e74c3c',
+    padding: 15,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  logoutButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  header: {
+    marginBottom: 20,
+  },
+  bienvenida: {
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+  estadoCliente: {
+    fontSize: 16,
+    color: '#666',
+  },
+  sectionContainer: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  listContent: {
+    paddingBottom: 20,
+  },
+  emptyText: {
+    textAlign: 'center',
+    color: '#666',
+    marginTop: 20,
+  },
+  restauranteCard: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  restauranteImagen: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  restauranteInfo: {
+    flex: 1,
+  },
+  restauranteNombre: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  restauranteDetalle: {
+    color: '#666',
+    fontSize: 14,
+  },
+  pedidoCard: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+  },
+  pedidoId: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 4,
+  },
 });
