@@ -4,8 +4,9 @@ data class Cliente(
     val cedula: String,
     val nombre: String,
     val direccion: String,
-    val tarjeta: String,
     val telefono: String,
-    val correo: String,
-    val estado: String  // "ACTIVO" o "SUSPENDIDO"
+    val email: String,
+    val numTarjeta: String,
+    val estado: String,
+    val newItem: Boolean = false
 )

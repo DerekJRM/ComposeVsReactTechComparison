@@ -20,11 +20,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.frontend_jetpack_compose.ui.navigation.AppNavGraph
+import com.example.frontend_jetpack_compose.data.LoginViewModel
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -33,54 +37,65 @@ import kotlinx.coroutines.launch
 fun MainScaffold(navController: NavHostController) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val loginViewModel: LoginViewModel = viewModel()
+    val isLoggedIn by loginViewModel.isLoggedIn.collectAsState()
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet {
-                Text("CletaEats", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(16.dp))
-                Divider()
+    if (isLoggedIn) {
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            drawerContent = {
+                ModalDrawerSheet {
+                    Text("CletaEats", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(16.dp))
+                    Divider()
 
-                NavigationDrawerItem(
-                    label = { Text("Perfil") },
-                    selected = false,
-                    onClick = { /* Implementar navegación a perfil */ }
-                )
-                NavigationDrawerItem(
-                    label = { Text("Historial") },
-                    selected = false,
-                    onClick = { navController.navigate("historial") }
-                )
-                NavigationDrawerItem(
-                    label = { Text("Cerrar sesión") },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        navController.navigate("login") {
-                            popUpTo("login") { inclusive = true }
+//                    NavigationDrawerItem(
+//                        label = { Text("Perfil") },
+//                        selected = false,
+//                        onClick = { /* Implementar navegación a perfil */ }
+//                    )
+//                    NavigationDrawerItem(
+//                        label = { Text("Historial") },
+//                        selected = false,
+//                        onClick = {
+//                            scope.launch { drawerState.close() }
+//                            navController.navigate("historial")
+//                        }
+//                    )
+                    NavigationDrawerItem(
+                        label = { Text("Cerrar sesión") },
+                        selected = false,
+                        onClick = {
+                            loginViewModel.logout()
+                            scope.launch { drawerState.close() }
+                            navController.navigate("login") {
+                                popUpTo("login") { inclusive = true }
+                            }
                         }
-                    }
-                )
+                    )
+                }
+            }
+        ) {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text("CletaEats") },
+                        navigationIcon = {
+                            IconButton(onClick = {
+                                scope.launch { drawerState.open() }
+                            }) {
+                                Icon(Icons.Filled.Menu, contentDescription = "Menú")
+                            }
+                        }
+                    )
+                }
+            ) { padding ->
+                Box(modifier = Modifier.padding(padding)) {
+                    AppNavGraph(navController = navController)
+                }
             }
         }
-    ) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("CletaEats") },
-                    navigationIcon = {
-                        IconButton(
-                            onClick = { scope.launch { drawerState.open() } }
-                        ) {
-                            Icon(Icons.Filled.Menu, contentDescription = "Menú")
-                        }
-                    }
-                )
-            }
-        ) { padding ->
-            Box(modifier = Modifier.padding(padding)) { // Envuelve el contenido con el padding
-                AppNavGraph(navController = navController) // Sin modifier
-            }
-        }
+    } else {
+        // Si no está logueado, solo se muestra el NavGraph (pantalla de login)
+        AppNavGraph(navController = navController)
     }
 }

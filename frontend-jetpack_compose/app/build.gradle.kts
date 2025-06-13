@@ -68,4 +68,5 @@ dependencies {
 
     // Debug
     debugImplementation(libs.androidx.compose.ui.tooling)
+    implementation(libs.gson)
 }

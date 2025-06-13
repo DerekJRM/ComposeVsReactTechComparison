@@ -8,47 +8,49 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.frontend_jetpack_compose.ui.screens.*
-import com.example.frontend_jetpack_compose.ui.viewmodels.LoginViewModel
+import com.example.frontend_jetpack_compose.data.LoginViewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavGraph(navController: NavHostController) {
+    val loginViewModel: LoginViewModel = viewModel()
+    val isLoggedIn by loginViewModel.isLoggedIn.collectAsState()
+
     NavHost(
         navController = navController,
-        startDestination = "login"
+        startDestination = /*if (isLoggedIn) "lista_restaurantes" else*/ "login"
     ) {
-        // Pantallas principales
         composable("login") {
-            val viewModel: LoginViewModel = viewModel()
             LoginScreen(
                 navController = navController,
-                viewModel = viewModel
+                viewModel = loginViewModel
             )
         }
 
-        composable("registro_cliente") {
-            RegistroClienteScreen(navController = navController)
+        if (isLoggedIn) {
+//            composable("registro_cliente") {
+//                RegistroClienteScreen(navController = navController)
+//            }
+//
+//            composable("lista_restaurantes") {
+//                ListaRestaurantesScreen(navController = navController)
+//            }
+//
+//            composable("detalle_restaurante/{restauranteId}") { backStackEntry ->
+//                val restauranteId = backStackEntry.arguments?.getString("restauranteId") ?: ""
+//                DetalleRestauranteScreen(navController = navController, restauranteId = restauranteId)
+//            }
+//
+//            composable("carrito") { CarritoScreen(navController = navController) }
+//
+//            composable("seguimiento/{pedidoId}") { backStackEntry ->
+//                val pedidoId = backStackEntry.arguments?.getString("pedidoId")?.toIntOrNull() ?: 0
+//                SeguimientoPedidoScreen(navController = navController, pedidoId = pedidoId)
+//            }
+//
+//            composable("historial") { HistorialPedidosScreen(navController = navController) }
         }
-
-        composable("lista_restaurantes") {
-            ListaRestaurantesScreen(navController = navController)
-        }
-
-        composable("detalle_restaurante/{restauranteId}") { backStackEntry ->
-            val restauranteId = backStackEntry.arguments?.getString("restauranteId") ?: ""
-            DetalleRestauranteScreen(
-                navController = navController,
-                restauranteId = restauranteId
-            )
-        }
-
-        composable("carrito") { CarritoScreen(navController = navController) }
-
-        composable("seguimiento/{pedidoId}") { backStackEntry ->
-            val pedidoId = backStackEntry.arguments?.getString("pedidoId")?.toIntOrNull() ?: 0
-            SeguimientoPedidoScreen(navController = navController, pedidoId = pedidoId)
-        }
-
-        composable("historial") { HistorialPedidosScreen(navController = navController) }
     }
 }

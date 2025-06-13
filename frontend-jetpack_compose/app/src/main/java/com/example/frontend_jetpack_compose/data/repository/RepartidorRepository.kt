@@ -1,25 +1,31 @@
 package com.example.frontend_jetpack_compose.data.repository
 
+import com.example.frontend_jetpack_compose.data.model.Cliente
 import com.example.frontend_jetpack_compose.data.model.Repartidor
+import com.example.frontend_jetpack_compose.data.model.Usuario
+import com.google.gson.Gson
+import java.net.HttpURLConnection
+import java.net.URL
 
 object RepartidorRepository {
-    internal val repartidores = mutableListOf<Repartidor>()
+    private const val BASE_URL = "http://10.0.2.2:8080/api"
+    private val gson = Gson()
 
-    fun registrarRepartidor(repartidor: Repartidor) {
-        repartidores.add(repartidor)
-    }
+    suspend fun getRepartidorById(cedula: String): Repartidor? {
+        val url = URL("$BASE_URL/getRepartidorById/$cedula")
+        val connection = url.openConnection() as HttpURLConnection
+        return try {
+            connection.requestMethod = "GET"
+            connection.connect()
 
-    fun obtenerDisponibles(): List<Repartidor> = repartidores.filter {
-        it.estado == "DISPONIBLE" && it.amonestaciones < 4
-    }
-
-    fun agregarAmonestacion(cedula: String) {
-        repartidores.replaceAll {
-            if (it.cedula == cedula) it.copy(amonestaciones = it.amonestaciones + 1) else it
+            if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                val response = connection.inputStream.bufferedReader().use { it.readText() }
+                gson.fromJson(response, Repartidor::class.java)
+            } else {
+                null
+            }
+        } finally {
+            connection.disconnect()
         }
-    }
-
-    fun asignarRepartidor(): Repartidor? {
-        return repartidores.firstOrNull { it.estado == "DISPONIBLE" && it.amonestaciones < 4 }
     }
 }
