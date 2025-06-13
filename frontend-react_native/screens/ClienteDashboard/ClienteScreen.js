@@ -1,63 +1,115 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  ScrollView, 
-  Text, 
-  TouchableOpacity, 
-  View, 
-  Modal, 
-  FlatList, 
-  Alert, 
-  Platform,
-  Dimensions
-} from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, FlatList, Modal, StyleSheet, Platform, ActivityIndicator, Alert, TextInput, Dimensions } from 'react-native';
 import AuthButton from '../../components/AuthButton';
 import { styles } from '../../styles/globalStyles';
 
-// Configuración de la API basada en la plataforma
+// Configuración de la API
 const getBaseUrl = () => {
   if (Platform.OS === 'android') {
-    return 'http://192.168.100.4:8080'; // Ajusta esta IP para tu red local
+    return 'http://192.168.100.4:8080';
   } else if (Platform.OS === 'web') {
-    return 'http://localhost:8080'; // Para desarrollo web
+    return 'http://localhost:8080';
   }
-  return 'http://localhost:8080'; // iOS simulator u otros
+  return 'http://localhost:8080';
 };
 
-const API_URL = `${getBaseUrl()}/api`;
-const isWeb = Platform.OS === 'web';
-const windowWidth = Dimensions.get('window').width;
+const BASE_URL = getBaseUrl();
+
+// Obtener dimensiones de la pantalla
+const { width, height } = Dimensions.get('window');
+const isMobile = width < 768; // Consideramos móvil si el ancho es menor a 768px
 
 export default function ClienteScreen({ cliente, onLogout }) {
-  // Estados
   const [restaurantes, setRestaurantes] = useState([]);
-  const [restauranteSeleccionado, setRestauranteSeleccionado] = useState(null);
-  const [combosSeleccionados, setCombosSeleccionados] = useState([]);
+  const [combos, setCombos] = useState([]);
+  const [pedidos, setPedidos] = useState([]);
+  const [selectedRestaurante, setSelectedRestaurante] = useState(null);
+  const [selectedCombos, setSelectedCombos] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalFacturaVisible, setModalFacturaVisible] = useState(false);
-  const [historialPedidos, setHistorialPedidos] = useState([]);
-  const [repartidores, setRepartidores] = useState([]);
-  const [factura, setFactura] = useState(null);
-  const [combosRestaurante, setCombosRestaurante] = useState([]);
-  const [detallesComboModal, setDetallesComboModal] = useState(false);
-  const [comboSeleccionadoDetalle, setComboSeleccionadoDetalle] = useState(null);
+  const [pedidosModalVisible, setPedidosModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [subtotal, setSubtotal] = useState(0);
+  const [costoTransporte] = useState(2000);
+  const [quejasModalVisible, setQuejasModalVisible] = useState(false);
+  const [selectedPedido, setSelectedPedido] = useState(null);
+  const [descripcionQueja, setDescripcionQueja] = useState('');
+  const [repartidorId, setRepartidorId] = useState('');
+  const [quejasCliente, setQuejasCliente] = useState([]);
 
-  // Cargar datos iniciales
   useEffect(() => {
-    cargarDatosIniciales();
+    fetchRestaurantes();
+    fetchPedidosCliente();
+  }, []);
+
+  useEffect(() => {
+    if (selectedRestaurante) {
+      fetchCombosByRestaurante(selectedRestaurante.cedulaJuridica);
+    }
+  }, [selectedRestaurante]);
+
+  useEffect(() => {
+    const calculatedSubtotal = selectedCombos.reduce((acc, combo) => acc + (combo.precio * combo.cantidad), 0);
+    setSubtotal(calculatedSubtotal);
+  }, [selectedCombos]);
+
+  useEffect(() => {
+    if (cliente?.cedula) {
+      fetchQuejasCliente();
+    }
   }, [cliente]);
 
-  const cargarDatosIniciales = async () => {
+  const fetchQuejasCliente = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/clientes/${cliente.cedula}/quejas`);
+      if (!response.ok) throw new Error('Error al obtener quejas');
+      const data = await response.json();
+      setQuejasCliente(data);
+    } catch (error) {
+      console.error('Error fetching quejas:', error);
+    }
+  };
+
+  const abrirModalQueja = (pedido) => {
+    setSelectedPedido(pedido);
+    setDescripcionQueja('');
+    setRepartidorId(pedido.repartidorId || '');
+    setQuejasModalVisible(true);
+  };
+
+  const enviarQueja = async () => {
+    if (!descripcionQueja) {
+      Alert.alert('Error', 'Debes ingresar una descripción para la queja');
+      return;
+    }
+
     try {
       setLoading(true);
-      await Promise.all([
-        fetchRestaurantes(),
-        fetchRepartidores(),
-        cliente?.cedula && fetchPedidosCliente(cliente.cedula)
-      ]);
+      
+      const quejaData = {
+        repartidorId: repartidorId,
+        clienteId: cliente.cedula,
+        descripcion: descripcionQueja
+      };
+
+      const response = await fetch(`${BASE_URL}/api/quejas`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(quejaData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.mensaje || 'Error al enviar queja');
+      }
+
+      Alert.alert('Éxito', 'Queja registrada correctamente');
+      setQuejasModalVisible(false);
+      fetchQuejasCliente();
     } catch (error) {
-      console.error('Error cargando datos iniciales:', error);
-      Alert.alert('Error', 'No se pudieron cargar los datos iniciales');
+      console.error('Error enviando queja:', error);
+      Alert.alert('Error', error.message || 'No se pudo enviar la queja');
     } finally {
       setLoading(false);
     }
@@ -65,541 +117,1201 @@ export default function ClienteScreen({ cliente, onLogout }) {
 
   const fetchRestaurantes = async () => {
     try {
-      const response = await fetch(`${API_URL}/restaurantes`);
-      if (!response.ok) throw new Error('Error en la respuesta');
+      setLoading(true);
+      const response = await fetch(`${BASE_URL}/api/restaurantes`);
+      if (!response.ok) throw new Error('Error al obtener restaurantes');
       const data = await response.json();
       setRestaurantes(data);
     } catch (error) {
       console.error('Error fetching restaurantes:', error);
-      throw error;
+      Alert.alert('Error', 'No se pudieron cargar los restaurantes');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const fetchRepartidores = async () => {
-    try {
-      const response = await fetch(`${API_URL}/repartidores`);
-      if (!response.ok) throw new Error('Error en la respuesta');
-      const data = await response.json();
-      setRepartidores(data);
-    } catch (error) {
-      console.error('Error fetching repartidores:', error);
-      throw error;
-    }
-  };
-
-  const fetchPedidosCliente = async (cedula) => {
-    try {
-      const response = await fetch(`${API_URL}/clientes/${cedula}/pedidos`);
-      if (!response.ok) throw new Error('Error en la respuesta');
-      const data = await response.json();
-      setHistorialPedidos(data);
-    } catch (error) {
-      console.error('Error fetching pedidos:', error);
-      throw error;
-    }
-  };
-
-  const fetchCombosRestaurante = async (cedulaJuridica) => {
-    try {
-      const response = await fetch(`${API_URL}/restaurantes/${cedulaJuridica}/combos`);
-      if (!response.ok) throw new Error('Error en la respuesta');
-      const data = await response.json();
-      setCombosRestaurante(data);
-    } catch (error) {
-      console.error('Error fetching combos:', error);
-      throw error;
-    }
-  };
-
-  const seleccionarRestaurante = async (restaurante) => {
-    /*
-    if (cliente.estado !== 'ACTIVO') {
-      Alert.alert('Cuenta suspendida', 'Su cuenta está suspendida y no puede realizar pedidos.');
-      return;
-    }
-    */
+  const fetchCombosByRestaurante = async (restauranteId) => {
     try {
       setLoading(true);
-      setRestauranteSeleccionado(restaurante);
-      await fetchCombosRestaurante(restaurante.cedulaJuridica);
-      setModalVisible(true);
+      const response = await fetch(`${BASE_URL}/api/restaurantes/${restauranteId}/combos`);
+      if (!response.ok) throw new Error('Error al obtener combos');
+      const data = await response.json();
+      setCombos(data);
     } catch (error) {
+      console.error('Error fetching combos:', error);
       Alert.alert('Error', 'No se pudieron cargar los combos del restaurante');
     } finally {
       setLoading(false);
     }
   };
 
-  const agregarCombo = (combo) => {
-    const existente = combosSeleccionados.find(c => c.id === combo.id);
-    
-    if (existente) {
-      setCombosSeleccionados(combosSeleccionados.map(c => 
-        c.id === combo.id ? {...c, cantidad: c.cantidad + 1} : c
-      ));
-    } else {
-      setCombosSeleccionados([...combosSeleccionados, {...combo, cantidad: 1}]);
+  const fetchPedidosCliente = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${BASE_URL}/api/clientes/${cliente.cedula}/pedidos`);
+      if (!response.ok) throw new Error('Error al obtener pedidos');
+      const data = await response.json();
+      setPedidos(data);
+    } catch (error) {
+      console.error('Error fetching pedidos:', error);
+      Alert.alert('Error', 'No se pudo cargar el historial de pedidos');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const quitarCombo = (comboId) => {
-    const existente = combosSeleccionados.find(c => c.id === comboId);
-    
-    if (existente && existente.cantidad > 1) {
-      setCombosSeleccionados(combosSeleccionados.map(c => 
-        c.id === comboId ? {...c, cantidad: c.cantidad - 1} : c
-      ));
-    } else {
-      setCombosSeleccionados(combosSeleccionados.filter(c => c.id !== comboId));
-    }
+  const handleRestauranteSelect = (restaurante) => {
+    setSelectedRestaurante(restaurante);
+    setSelectedCombos([]);
+    setModalVisible(true);
+  };
+
+  const handleComboSelect = (combo) => {
+    setSelectedCombos(prev => {
+      const existingIndex = prev.findIndex(item => item.id === combo.id);
+      if (existingIndex >= 0) {
+        const updated = [...prev];
+        updated[existingIndex].cantidad += 1;
+        return updated;
+      } else {
+        return [...prev, { ...combo, cantidad: 1 }];
+      }
+    });
+  };
+
+  const removeCombo = (comboId) => {
+    setSelectedCombos(prev => {
+      const existingIndex = prev.findIndex(item => item.id === comboId);
+      if (existingIndex >= 0) {
+        const updated = [...prev];
+        if (updated[existingIndex].cantidad > 1) {
+          updated[existingIndex].cantidad -= 1;
+          return updated;
+        } else {
+          return updated.filter(item => item.id !== comboId);
+        }
+      }
+      return prev;
+    });
   };
 
   const realizarPedido = async () => {
-    if (combosSeleccionados.length === 0) {
-      Alert.alert('Pedido vacío', 'Por favor seleccione al menos un combo.');
+    if (selectedCombos.length === 0) {
+      Alert.alert('Error', 'Debes seleccionar al menos un combo');
       return;
     }
 
     try {
       setLoading(true);
       
-      // Encontrar repartidor disponible con menos de 4 amonestaciones
-      const repartidorDisponible = repartidores.find(r => 
-        r.estado === 'DISPONIBLE' && (r.amonestaciones === null || r.amonestaciones < 4));
-
-      if (!repartidorDisponible) {
-        Alert.alert('No hay repartidores', 'No hay repartidores disponibles en este momento.');
-        return;
-      }
-
-      // Calcular subtotal
-      const subtotal = combosSeleccionados.reduce((total, combo) => 
-        total + (combo.precio * combo.cantidad), 0);
-
-      // Crear el objeto pedido según tu modelo de backend
       const pedidoData = {
         clienteId: cliente.cedula,
-        restauranteId: restauranteSeleccionado.cedulaJuridica,
-        repartidorId: repartidorDisponible.cedula,
-        estado: 'EN_PREPARACION',
+        restauranteId: selectedRestaurante.cedulaJuridica,
+        estado: "EN_PREPARACION",
         subtotal: subtotal,
-        costoTransporte: 5 * (repartidorDisponible.costoKmHabil || 1000), // Distancia fija de 5km
-        combos: combosSeleccionados.map(combo => ({
+        costoTransporte: costoTransporte,
+        direccion: cliente.direccion
+      };
+
+      const pedidoResponse = await fetch(`${BASE_URL}/api/pedidos`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(pedidoData)
+      });
+      
+      if (!pedidoResponse.ok) {
+        const errorData = await pedidoResponse.json();
+        throw new Error(errorData.mensaje || 'Error al crear el pedido');
+      }
+      
+      const pedidoCreado = await pedidoResponse.json();
+
+      for (const combo of selectedCombos) {
+        const pedidoComboData = {
           comboId: combo.id,
           cantidad: combo.cantidad,
           precioUnit: combo.precio
-        }))
-      };
+        };
 
-      // Enviar pedido al backend
-      const response = await fetch(`${API_URL}/pedidos`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(pedidoData),
-      });
+        const comboResponse = await fetch(`${BASE_URL}/api/pedidos/${pedidoCreado.id}/combos`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(pedidoComboData)
+        });
 
-      if (!response.ok) {
-        throw new Error('Error al crear el pedido');
+        if (!comboResponse.ok) {
+          const errorData = await comboResponse.json();
+          throw new Error(errorData.mensaje || `Error al agregar combo ${combo.id} al pedido`);
+        }
       }
-
-      const nuevoPedido = await response.json();
       
-      // Obtener la factura asociada (asumiendo que tu backend la genera automáticamente)
-      const facturaResponse = await fetch(`${API_URL}/pedidos/${nuevoPedido.id}/factura`);
-      if (facturaResponse.ok) {
-        const facturaData = await facturaResponse.json();
-        setFactura(facturaData);
-      }
-
-      // Actualizar el historial de pedidos
-      await fetchPedidosCliente(cliente.cedula);
-      
-      // Cerrar modal y resetear selecciones
+      Alert.alert('Éxito', 'Pedido realizado correctamente');
       setModalVisible(false);
-      setModalFacturaVisible(true);
-      setCombosSeleccionados([]);
-      setRestauranteSeleccionado(null);
+      setSelectedCombos([]);
+      fetchPedidosCliente();
     } catch (error) {
-      console.error('Error al realizar pedido:', error);
-      Alert.alert('Error', 'No se pudo completar el pedido');
+      console.error('Error completo realizando pedido:', error);
+      Alert.alert('Error', error.message || 'No se pudo completar el pedido. Por favor intente nuevamente.');
     } finally {
       setLoading(false);
     }
   };
 
-  const cancelarPedido = () => {
-    setCombosSeleccionados([]);
-    setRestauranteSeleccionado(null);
-    setModalVisible(false);
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('es-CR', { 
+      style: 'currency', 
+      currency: 'CRC',
+      minimumFractionDigits: 2
+    }).format(value);
   };
 
-  const calificarRepartidor = async (pedidoId, calificacion) => {
-    try {
-      setLoading(true);
-      const quejaData = {
-        repartidorId: historialPedidos.find(p => p.id === pedidoId)?.repartidorId,
-        clienteId: cliente.cedula,
-        descripcion: `Calificación: ${calificacion} estrellas`
-      };
+  const renderRestauranteItem = ({ item }) => (
+  <TouchableOpacity 
+    style={[
+      localStyles.restauranteCard,
+      isMobile ? localStyles.mobileRestauranteCard : localStyles.desktopRestauranteCard
+    ]}
+    onPress={() => handleRestauranteSelect(item)}
+  >
+    <Text style={localStyles.restauranteNombre}>{item.nombre}</Text>
+    <Text style={localStyles.restauranteInfo}>{item.direccion}</Text>
+    <Text style={localStyles.restauranteInfo}>Tipo: {item.tipoComida}</Text>
+  </TouchableOpacity>
+);
 
-      const response = await fetch(`${API_URL}/quejas`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(quejaData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al enviar calificación');
-      }
-
-      Alert.alert('Calificación enviada', `Gracias por calificar con ${calificacion} estrellas.`);
-      await fetchPedidosCliente(cliente.cedula);
-    } catch (error) {
-      console.error('Error al calificar:', error);
-      Alert.alert('Error', 'No se pudo enviar la calificación');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Estilos dinámicos para diferentes plataformas
-  const dynamicStyles = {
-    modalContent: {
-      backgroundColor: 'white',
-      borderRadius: 10,
-      padding: 20,
-      width: isWeb ? (windowWidth > 600 ? '60%' : '90%') : '90%',
-      maxWidth: 500,
-      maxHeight: isWeb ? '80vh' : undefined,
-    },
-    restauranteCard: {
-      backgroundColor: '#fff',
-      borderRadius: 10,
-      padding: 15,
-      marginBottom: 15,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
-      width: isWeb ? (windowWidth > 600 ? '48%' : '100%') : '100%',
-    },
-    restaurantesContainer: {
-      flexDirection: isWeb ? 'row' : 'column',
-      flexWrap: isWeb ? 'wrap' : 'nowrap',
-      justifyContent: isWeb ? 'space-between' : 'flex-start',
-    },
-  };
-
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text>Cargando...</Text>
+  const renderComboItem = ({ item }) => (
+    <View style={[
+      localStyles.comboCard,
+      isMobile ? localStyles.comboCardMobile : localStyles.comboCardDesktop
+    ]}>
+      <Text style={localStyles.comboNombre}>{item.nombre}</Text>
+      <Text style={localStyles.comboDescripcion}>{item.descripcion}</Text>
+      <Text style={localStyles.comboPrecio}>{formatCurrency(item.precio)}</Text>
+      
+      <View style={localStyles.comboActions}>
+        <TouchableOpacity 
+          style={localStyles.actionButton} 
+          onPress={() => removeCombo(item.id)}
+          disabled={!selectedCombos.some(c => c.id === item.id)}
+        >
+          <Text style={localStyles.actionButtonText}>-</Text>
+        </TouchableOpacity>
+        
+        <Text style={localStyles.comboCantidad}>
+          {selectedCombos.find(c => c.id === item.id)?.cantidad || 0}
+        </Text>
+        
+        <TouchableOpacity 
+          style={localStyles.actionButton} 
+          onPress={() => handleComboSelect(item)}
+        >
+          <Text style={localStyles.actionButtonText}>+</Text>
+        </TouchableOpacity>
       </View>
-    );
-  }
+    </View>
+  );
+
+  const renderPedidoItem = ({ item }) => (
+    <View style={[
+      localStyles.pedidoCard,
+      isMobile ? localStyles.pedidoCardMobile : localStyles.pedidoCardDesktop
+    ]}>
+      <Text style={localStyles.pedidoTitle}>Pedido #{item.id}</Text>
+      <Text style={localStyles.pedidoInfo}>Estado: {item.estado}</Text>
+      <Text style={localStyles.pedidoInfo}>Fecha: {new Date(item.fechaPedido).toLocaleString()}</Text>
+      <Text style={localStyles.pedidoInfo}>Total: {formatCurrency(item.total)}</Text>
+      
+      {item.estado === 'ENTREGADO' && (
+        <TouchableOpacity 
+          style={localStyles.quejaButton}
+          onPress={() => abrirModalQueja(item)}
+        >
+          <Text style={localStyles.quejaButtonText}>Calificar/Quejar</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
 
   return (
-    <View style={styles.container}>
-      {/* Encabezado */}
-      <View style={styles.header}>
-        <Text style={styles.bienvenida}>Hola {cliente.nombre}</Text>
-        <Text style={styles.estadoCliente}>Estado: {cliente.estado}</Text>
-      </View>
+    <View style={isMobile ? localStyles.mobileContainer : localStyles.desktopContainer}>
+      {/* Sidebar en desktop */}
+      {!isMobile && (
+        <View style={localStyles.sidebar}>
+          <View style={localStyles.profileSection}>
+            <Text style={localStyles.welcomeText}>Bienvenido</Text>
+            <Text style={localStyles.userName}>{cliente.nombre}</Text>
+            <Text style={localStyles.userAddress}>{cliente.direccion}</Text>
+          </View>
+          
+          <TouchableOpacity 
+            style={localStyles.sidebarButton}
+            onPress={() => setPedidosModalVisible(true)}
+          >
+            <Text style={localStyles.sidebarButtonText}>Mis Pedidos ({pedidos.length})</Text>
+          </TouchableOpacity>
+          
+          <AuthButton 
+            title="Cerrar sesión" 
+            onPress={onLogout}
+            style={localStyles.logoutButton}
+            textStyle={localStyles.logoutButtonText}
+          />
+        </View>
+      )}
 
-      {/* Lista de restaurantes - SOLUCIÓN PRINCIPAL */}
-      <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>Restaurantes disponibles</Text>
-        <FlatList
-          data={restaurantes}
-          keyExtractor={(item) => item.cedulaJuridica}
-          renderItem={({ item }) => (
-            <RestauranteCard 
-              item={item} 
-              onPress={() => seleccionarRestaurante(item)} 
-            />
-          )}
-          contentContainerStyle={styles.listContent}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>No hay restaurantes disponibles</Text>
-          }
-        />
-      </View>
+      {/* Contenido principal */}
+      <View style={isMobile ? localStyles.mobileContent : localStyles.desktopContent}>
+        {/* Header en móvil */}
+        {isMobile && (
+          <View style={localStyles.mobileHeader}>
+            <Text style={localStyles.mobileWelcome}>Hola {cliente.nombre}</Text>
+            <Text style={localStyles.mobileAddress}>{cliente.direccion}</Text>
+            
+            <View style={localStyles.mobileButtons}>
+              <TouchableOpacity 
+                style={localStyles.mobileHistorialButton}
+                onPress={() => setPedidosModalVisible(true)}
+              >
+                <Text style={localStyles.mobileButtonText}>Ver mis pedidos ({pedidos.length})</Text>
+              </TouchableOpacity>
+              
+              <AuthButton 
+                title="Cerrar sesión" 
+                onPress={onLogout}
+                style={localStyles.mobileLogoutButton}
+                textStyle={localStyles.mobileButtonText}
+              />
+            </View>
+          </View>
+        )}
 
-      {/* Historial de pedidos - SIN SCROLLVIEW ANIDADO */}
-      <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>Tus pedidos recientes</Text>
-        <FlatList
-          data={historialPedidos}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => <PedidoCard item={item} />}
-          contentContainerStyle={styles.listContent}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>No tienes pedidos recientes</Text>
-          }
-        />
+        {/* Lista de restaurantes */}
+        {loading && !modalVisible && !pedidosModalVisible ? (
+          <ActivityIndicator size="large" color="#0000ff" />
+        ) : (
+          <FlatList
+            data={restaurantes}
+            renderItem={renderRestauranteItem}
+            keyExtractor={item => item.cedulaJuridica}
+            contentContainerStyle={isMobile ? localStyles.mobileListContainer : localStyles.desktopListContainer}
+            ListEmptyComponent={
+              <Text style={localStyles.emptyText}>No hay restaurantes disponibles</Text>
+            }
+            numColumns={isMobile ? 1 : 3} // 1 columna en móvil, 3 en desktop
+            columnWrapperStyle={!isMobile ? localStyles.desktopColumnWrapper : null}
+          />
+        )}
       </View>
       
       {/* Modal para seleccionar combos */}
       <Modal
         animationType="slide"
-        transparent={true}
+        transparent={false}
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <View style={styles.modalContainer}>
-          <View style={dynamicStyles.modalContent}>
-            {restauranteSeleccionado && (
-              <>
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>{restauranteSeleccionado.nombre}</Text>
-                  <Text style={styles.modalSubtitle}>Combos disponibles</Text>
+        <View style={[
+          localStyles.modalContainer,
+          isMobile ? localStyles.modalContainerMobile : localStyles.modalContainerDesktop
+        ]}>
+          <View style={localStyles.modalHeader}>
+            <TouchableOpacity 
+              style={localStyles.backButton}
+              onPress={() => {
+                setModalVisible(false);
+                setSelectedCombos([]);
+              }}
+            >
+              <Text style={localStyles.backButtonText}>←</Text>
+            </TouchableOpacity>
+            <Text style={localStyles.modalTitle}>{selectedRestaurante?.nombre}</Text>
+          </View>
+          
+          {loading ? (
+            <ActivityIndicator size="large" color="#0000ff" />
+          ) : (
+            <>
+              <FlatList
+                data={combos}
+                renderItem={renderComboItem}
+                keyExtractor={item => item.id.toString()}
+                contentContainerStyle={localStyles.listContainer}
+                ListEmptyComponent={
+                  <Text style={localStyles.emptyText}>Este restaurante no tiene combos disponibles</Text>
+                }
+                numColumns={isMobile ? 1 : 2} // Mostrar 2 columnas en desktop
+              />
+              
+              <View style={[
+                localStyles.summaryContainer,
+                isMobile ? localStyles.summaryContainerMobile : localStyles.summaryContainerDesktop
+              ]}>
+                <View style={localStyles.summaryRow}>
+                  <Text style={localStyles.summaryLabel}>Subtotal:</Text>
+                  <Text style={localStyles.summaryValue}>{formatCurrency(subtotal)}</Text>
                 </View>
+                <View style={localStyles.summaryRow}>
+                  <Text style={localStyles.summaryLabel}>Costo de envío:</Text>
+                  <Text style={localStyles.summaryValue}>{formatCurrency(costoTransporte)}</Text>
+                </View>
+                <View style={localStyles.summaryRow}>
+                  <Text style={localStyles.summaryLabel}>IVA (13%):</Text>
+                  <Text style={localStyles.summaryValue}>{formatCurrency(subtotal * 0.13)}</Text>
+                </View>
+                <View style={[localStyles.summaryRow, localStyles.totalRow]}>
+                  <Text style={[localStyles.summaryLabel, localStyles.totalLabel]}>Total:</Text>
+                  <Text style={[localStyles.summaryValue, localStyles.totalValue]}>
+                    {formatCurrency(subtotal + costoTransporte + (subtotal * 0.13))}
+                  </Text>
+                </View>
+              </View>
+              
+              <View style={[
+                localStyles.modalButtons,
+                isMobile ? localStyles.modalButtonsMobile : localStyles.modalButtonsDesktop
+              ]}>
+                <TouchableOpacity 
+                  style={[localStyles.modalButton, localStyles.cancelButton]}
+                  onPress={() => {
+                    setModalVisible(false);
+                    setSelectedCombos([]);
+                  }}
+                  disabled={loading}
+                >
+                  <Text style={localStyles.modalButtonText}>Cancelar</Text>
+                </TouchableOpacity>
                 
-                <FlatList
-                  data={combosRestaurante}
-                  keyExtractor={(item) => item.id.toString()}
-                  renderItem={({item}) => (
-                    <View style={styles.comboItem}>
-                      <TouchableOpacity onPress={() => setComboSeleccionadoDetalle(item)}>
-                        <View style={styles.comboInfo}>
-                          <View style={styles.comboTextInfo}>
-                            <Text style={styles.comboNombre}>Combo #{item.comboNum}</Text>
-                            <Text style={styles.comboDescripcion} numberOfLines={1}>
-                              {item.descripcion || 'Delicioso combo'}
-                            </Text>
-                            <Text style={styles.comboPrecio}>₡{item.precio?.toLocaleString() || '0'}</Text>
-                            {item.ingredientes && (
-                              <Text style={styles.comboIngredientes}>
-                                Ingredientes: {item.ingredientes}
-                              </Text>
-                            )}
-                          </View>
-                        </View>
-                      </TouchableOpacity>
-                      
-                      <View style={styles.comboActions}>
-                        <TouchableOpacity 
-                          style={styles.comboButton}
-                          onPress={() => quitarCombo(item.id)}
-                        >
-                          <Text style={styles.comboButtonText}>-</Text>
-                        </TouchableOpacity>
-                        
-                        <Text style={styles.comboCantidad}>
-                          {combosSeleccionados.find(c => c.id === item.id)?.cantidad || 0}
-                        </Text>
-                        
-                        <TouchableOpacity 
-                          style={styles.comboButton}
-                          onPress={() => agregarCombo(item)}
-                        >
-                          <Text style={styles.comboButtonText}>+</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  )}
-                />
-                
-                <View style={styles.resumenPedido}>
-                  <Text style={styles.resumenTitle}>Tu pedido:</Text>
-                  {combosSeleccionados.length > 0 ? (
-                    <>
-                      {combosSeleccionados.map(combo => (
-                        <View key={combo.id} style={styles.resumenItem}>
-                          <Text style={styles.resumenItemText}>
-                            {combo.cantidad}x Combo #{combo.comboNum}
-                          </Text>
-                          <Text style={styles.resumenItemPrecio}>
-                            ₡{(combo.precio * combo.cantidad).toLocaleString()}
-                          </Text>
-                        </View>
-                      ))}
-                      <View style={styles.resumenTotalContainer}>
-                        <Text style={styles.resumenTotal}>
-                          Subtotal: ₡{combosSeleccionados.reduce((total, combo) => 
-                            total + (combo.precio * combo.cantidad), 0).toLocaleString()}
-                        </Text>
-                      </View>
-                    </>
+                <TouchableOpacity 
+                  style={[localStyles.modalButton, localStyles.confirmButton]}
+                  onPress={realizarPedido}
+                  disabled={loading || selectedCombos.length === 0}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#fff" />
                   ) : (
-                    <Text style={styles.noItemsText}>No has seleccionado combos</Text>
+                    <Text style={localStyles.modalButtonText}>Realizar Pedido</Text>
                   )}
-                </View>
-                
-                <View style={styles.modalButtons}>
-                  <AuthButton 
-                    title="Cancelar"
-                    onPress={cancelarPedido}
-                    style={styles.secondaryButton}
-                  />
-                  <AuthButton 
-                    title={loading ? "Procesando..." : "Realizar pedido"}
-                    onPress={realizarPedido}
-                    style={styles.primaryButton}
-                    disabled={combosSeleccionados.length === 0 || loading}
-                  />
-                </View>
-              </>
-            )}
-          </View>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
         </View>
       </Modal>
       
-      {/* Modal de detalles del combo */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={!!comboSeleccionadoDetalle}
-        onRequestClose={() => setComboSeleccionadoDetalle(null)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={dynamicStyles.modalContent}>
-            {comboSeleccionadoDetalle && (
-              <>
-                <Text style={styles.modalTitle}>Combo #{comboSeleccionadoDetalle.comboNum}</Text>
-                <Text style={styles.comboDetallePrecio}>
-                  ₡{comboSeleccionadoDetalle.precio?.toLocaleString() || '0'}
-                </Text>
-                <Text style={styles.comboDetalleDescripcion}>
-                  {comboSeleccionadoDetalle.descripcion || 'Descripción no disponible'}
-                </Text>
-                <Text style={styles.comboDetalleIngredientes}>
-                  Ingredientes: {comboSeleccionadoDetalle.ingredientes || 'No especificado'}
-                </Text>
-                
-                <View style={styles.comboDetalleActions}>
-                  <TouchableOpacity 
-                    style={styles.comboDetalleButton}
-                    onPress={() => {
-                      agregarCombo(comboSeleccionadoDetalle);
-                      setComboSeleccionadoDetalle(null);
-                    }}
-                  >
-                    <Text style={styles.comboDetalleButtonText}>Agregar al pedido</Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={styles.comboDetalleCloseButton}
-                    onPress={() => setComboSeleccionadoDetalle(null)}
-                  >
-                    <Text style={styles.comboDetalleCloseButtonText}>Cerrar</Text>
-                  </TouchableOpacity>
-                </View>
-              </>
-            )}
-          </View>
-        </View>
-      </Modal>
-      
-      {/* Modal de factura */}
+      {/* Modal para ver pedidos */}
       <Modal
         animationType="slide"
-        transparent={true}
-        visible={modalFacturaVisible}
-        onRequestClose={() => setModalFacturaVisible(false)}
+        transparent={false}
+        visible={pedidosModalVisible}
+        onRequestClose={() => setPedidosModalVisible(false)}
       >
-        <View style={styles.modalContainer}>
-          <View style={dynamicStyles.modalContent}>
-            {factura && (
-              <>
-                <Text style={styles.modalTitle}>¡Pedido realizado con éxito!</Text>
-                <Text style={styles.facturaNumero}>Factura #{factura.id}</Text>
-                <Text style={styles.facturaFecha}>
-                  Fecha: {new Date(factura.fechaPedido).toLocaleString()}
-                </Text>
-                
-                <View style={styles.facturaInfoContainer}>
-                  <Text style={styles.facturaLabel}>Cliente:</Text>
-                  <Text style={styles.facturaValue}>{factura.cliente}</Text>
-                  
-                  <Text style={styles.facturaLabel}>Restaurante:</Text>
-                  <Text style={styles.facturaValue}>{factura.restaurante}</Text>
-                  
-                  <Text style={styles.facturaLabel}>Repartidor:</Text>
-                  <Text style={styles.facturaValue}>{factura.repartidor || 'Asignado'}</Text>
-                </View>
-                
-                <View style={styles.facturaTotales}>
-                  <View style={styles.facturaLineItem}>
-                    <Text style={styles.facturaLineLabel}>Subtotal:</Text>
-                    <Text style={styles.facturaLineValue}>
-                      ₡{factura.subtotal?.toLocaleString() || '0'}
-                    </Text>
-                  </View>
-                  
-                  <View style={styles.facturaLineItem}>
-                    <Text style={styles.facturaLineLabel}>Transporte:</Text>
-                    <Text style={styles.facturaLineValue}>
-                      ₡{factura.costoTransporte?.toLocaleString() || '0'}
-                    </Text>
-                  </View>
-                  
-                  <View style={styles.facturaLineItem}>
-                    <Text style={styles.facturaLineLabel}>IVA (13%):</Text>
-                    <Text style={styles.facturaLineValue}>
-                      ₡{factura.iva?.toLocaleString() || '0'}
-                    </Text>
-                  </View>
-                  
-                  <View style={[styles.facturaLineItem, styles.facturaTotalItem]}>
-                    <Text style={styles.facturaTotalLabel}>Total:</Text>
-                    <Text style={styles.facturaTotalValue}>
-                      ₡{factura.total?.toLocaleString() || '0'}
-                    </Text>
-                  </View>
-                </View>
-                
-                <Text style={styles.estadoPedido}>
-                  Estado: {factura.estado?.replace('_', ' ') || 'Estado desconocido'}
-                </Text>
-                
-                <Text style={styles.facturaTiempoEstimado}>
-                  Tiempo estimado de entrega: 30-45 minutos
-                </Text>
-                
-                <AuthButton 
-                  title="Cerrar"
-                  onPress={() => setModalFacturaVisible(false)}
-                  style={styles.primaryButton}
+        <View style={[
+          localStyles.modalContainer,
+          isMobile ? localStyles.modalContainerMobile : localStyles.modalContainerDesktop
+        ]}>
+          <View style={localStyles.modalHeader}>
+            <TouchableOpacity 
+              style={localStyles.backButton}
+              onPress={() => setPedidosModalVisible(false)}
+            >
+              <Text style={localStyles.backButtonText}>←</Text>
+            </TouchableOpacity>
+            <Text style={localStyles.modalTitle}>Mis Pedidos</Text>
+          </View>
+          
+          {loading ? (
+            <ActivityIndicator size="large" color="#0000ff" />
+          ) : (
+            <>
+              {pedidos.length === 0 ? (
+                <Text style={localStyles.noPedidosText}>No has realizado ningún pedido aún</Text>
+              ) : (
+                <FlatList
+                  data={pedidos}
+                  renderItem={renderPedidoItem}
+                  keyExtractor={item => item.id.toString()}
+                  contentContainerStyle={localStyles.listContainer}
+                  numColumns={isMobile ? 1 : 2} // Mostrar 2 columnas en desktop
                 />
-              </>
+              )}
+            </>
+          )}
+        </View>
+      </Modal>
+
+      {/* Modal para quejas */}
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={quejasModalVisible}
+        onRequestClose={() => setQuejasModalVisible(false)}
+      >
+        <View style={[
+          localStyles.modalContainer,
+          isMobile ? localStyles.modalContainerMobile : localStyles.modalContainerDesktop
+        ]}>
+          <View style={localStyles.modalHeader}>
+            <TouchableOpacity 
+              style={localStyles.backButton}
+              onPress={() => setQuejasModalVisible(false)}
+            >
+              <Text style={localStyles.backButtonText}>←</Text>
+            </TouchableOpacity>
+            <Text style={localStyles.modalTitle}>Calificar Pedido #{selectedPedido?.id}</Text>
+          </View>
+
+          <View style={[
+            localStyles.quejaFormContainer,
+            isMobile ? localStyles.quejaFormContainerMobile : localStyles.quejaFormContainerDesktop
+          ]}>
+            {selectedPedido?.repartidorId && (
+              <View style={localStyles.inputContainer}>
+                <Text style={localStyles.inputLabel}>Repartidor ID:</Text>
+                <TextInput
+                  style={localStyles.input}
+                  value={repartidorId}
+                  onChangeText={setRepartidorId}
+                  editable={false}
+                />
+              </View>
             )}
+
+            <View style={localStyles.inputContainer}>
+              <Text style={localStyles.inputLabel}>Descripción de la queja:</Text>
+              <TextInput
+                style={[localStyles.input, localStyles.textArea]}
+                multiline
+                numberOfLines={4}
+                value={descripcionQueja}
+                onChangeText={setDescripcionQueja}
+                placeholder="Describe tu experiencia con el pedido..."
+              />
+            </View>
+
+            <TouchableOpacity 
+              style={[localStyles.modalButton, localStyles.confirmButton]}
+              onPress={enviarQueja}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={localStyles.modalButtonText}>Enviar Queja</Text>
+              )}
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
-      
-      <AuthButton 
-        title="Cerrar sesión" 
-        onPress={onLogout}
-        style={styles.logoutButton}
-        textStyle={styles.logoutButtonText}
-      />
+
+      {/* Modal para ver quejas existentes */}
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={quejasModalVisible}
+        onRequestClose={() => setQuejasModalVisible(false)}
+      >
+        <View style={[
+          localStyles.modalContainer,
+          isMobile ? localStyles.modalContainerMobile : localStyles.modalContainerDesktop
+        ]}>
+          <View style={localStyles.modalHeader}>
+            <TouchableOpacity 
+              style={localStyles.backButton}
+              onPress={() => setQuejasModalVisible(false)}
+            >
+              <Text style={localStyles.backButtonText}>←</Text>
+            </TouchableOpacity>
+            <Text style={localStyles.modalTitle}>Mis Quejas</Text>
+          </View>
+
+          {quejasCliente.length === 0 ? (
+            <Text style={localStyles.noItemsText}>No has registrado quejas aún</Text>
+          ) : (
+            <FlatList
+              data={quejasCliente}
+              renderItem={({ item }) => (
+                <View style={[
+                  localStyles.quejaCard,
+                  isMobile ? localStyles.quejaCardMobile : localStyles.quejaCardDesktop
+                ]}>
+                  <Text style={localStyles.quejaTitle}>Queja #{item.id}</Text>
+                  <Text style={localStyles.quejaInfo}>Repartidor: {item.repartidorId}</Text>
+                  <Text style={localStyles.quejaInfo}>Fecha: {new Date(item.fechaQueja).toLocaleDateString()}</Text>
+                  <Text style={localStyles.quejaDescripcion}>{item.descripcion}</Text>
+                </View>
+              )}
+              keyExtractor={item => item.id.toString()}
+              contentContainerStyle={localStyles.listContainer}
+              numColumns={isMobile ? 1 : 2} // Mostrar 2 columnas en desktop
+            />
+          )}
+        </View>
+      </Modal>
     </View>
   );
 }
 
-// Componentes adicionales para mejor organización
-const RestauranteCard = ({ item, onPress }) => (
-  <TouchableOpacity style={styles.restauranteCard} onPress={onPress}>
-    <View style={styles.restauranteInfo}>
-      <Text style={styles.restauranteNombre}>{item.nombre}</Text>
-      <Text style={styles.restauranteDetalle}>{item.tipoComida}</Text>
-      <Text style={styles.restauranteDetalle}>{item.direccion}</Text>
-      <Text style={styles.restauranteDetalle}>Teléfono: {item.telefono}</Text>
-    </View>
-  </TouchableOpacity>
-);
+const localStyles = StyleSheet.create({
+  // Contenedores principales
+  mobileContainer: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  desktopContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: '#f5f5f5',
+  },
 
-const PedidoCard = ({ item }) => (
-  <View style={styles.pedidoCard}>
-    <Text style={styles.pedidoId}>Pedido #{item.id}</Text>
-    <Text>Estado: {item.estado}</Text>
-    <Text>Total: ₡{item.total?.toLocaleString()}</Text>
-    <Text>Fecha: {new Date(item.fechaPedido).toLocaleDateString()}</Text>
-  </View>
-);
+  // Sidebar desktop
+  sidebar: {
+    width: 250,
+    backgroundColor: '#2c3e50',
+    padding: 20,
+    justifyContent: 'flex-start',
+  },
+  profileSection: {
+    marginBottom: 30,
+    borderBottomWidth: 1,
+    borderBottomColor: '#34495e',
+    paddingBottom: 20,
+  },
+  welcomeText: {
+    color: '#ecf0f1',
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  userName: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  userAddress: {
+    color: '#bdc3c7',
+    fontSize: 14,
+  },
+  sidebarButton: {
+    backgroundColor: '#3498db',
+    padding: 15,
+    borderRadius: 5,
+    marginBottom: 15,
+    alignItems: 'center',
+  },
+  sidebarButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  logoutButton: {
+    backgroundColor: '#e74c3c',
+    marginTop: 'auto',
+    marginBottom: 20,
+  },
+  logoutButtonText: {
+    color: '#fff',
+  },
+
+  // Contenido principal
+  mobileContent: {
+    flex: 1,
+    padding: 10,
+  },
+  desktopContent: {
+    flex: 1,
+    padding: 20,
+  },
+
+  // Header móvil
+  mobileHeader: {
+    marginBottom: 20,
+  },
+  mobileWelcome: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    marginBottom: 5,
+  },
+  mobileAddress: {
+    fontSize: 14,
+    color: '#7f8c8d',
+    marginBottom: 15,
+  },
+  mobileButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+  mobileHistorialButton: {
+    backgroundColor: '#3498db',
+    padding: 10,
+    borderRadius: 5,
+    flex: 1,
+    marginRight: 10,
+    alignItems: 'center',
+  },
+  mobileLogoutButton: {
+    flex: 1,
+  },
+  mobileButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+
+  // Listas
+  mobileListContainer: {
+    paddingBottom: 20,
+  },
+  desktopListContainer: {
+    padding: 10,
+  },
+  desktopColumnWrapper: {
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+
+  // Tarjetas de restaurante
+  restauranteCard: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 15,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+      web: {
+        boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+      }
+    }),
+  },
+  mobileRestauranteCard: {
+    width: '100%',
+    marginBottom: 10,
+  },
+  desktopRestauranteCard: {
+    width: '32%',
+    marginBottom: 15,
+  },
+  restauranteNombre: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    marginBottom: 5,
+  },
+  restauranteInfo: {
+    fontSize: 14,
+    color: '#7f8c8d',
+    marginBottom: 3,
+  },
+
+  // Texto vacío
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: '#7f8c8d',
+  },
+  
+  // Estilos para móvil
+  containerMobile: {
+    flex: 1,
+    padding: 10,
+  },
+  headerContainer: {
+    paddingHorizontal: 10,
+    marginBottom: 15,
+  },
+  buttonsContainerMobile: {
+    flexDirection: 'column',
+    gap: 10,
+    paddingHorizontal: 10,
+    marginBottom: 15,
+  },
+  historialButtonMobile: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  logoutButtonMobile: {
+    width: '100%',
+  },
+  listContentContainer: {
+    flex: 1,
+  },
+  listContainerMobile: {
+    paddingHorizontal: 5,
+  },
+  restauranteCardMobile: {
+    width: '100%',
+    marginHorizontal: 0,
+  },
+  
+  // Estilos para desktop
+  containerDesktop: {
+    flex: 1,
+    padding: 20,
+    maxWidth: 1200,
+    width: '100%',
+    marginHorizontal: 'auto',
+  },
+  headerContainerDesktop: {
+    maxWidth: 800,
+    marginHorizontal: 'auto',
+    width: '100%',
+    marginBottom: 20,
+  },
+  buttonsContainerDesktop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    maxWidth: 800,
+    marginHorizontal: 'auto',
+    marginBottom: 20,
+    width: '100%',
+  },
+  historialButtonDesktop: {
+    width: '48%',
+  },
+  logoutButtonDesktop: {
+    width: '48%',
+  },
+  listContainerDesktop: {
+    paddingHorizontal: 10,
+  },
+  columnWrapper: {
+    justifyContent: 'space-between',
+  },
+  restauranteCardDesktop: {
+    width: '48%',
+    marginHorizontal: 0,
+    marginBottom: 15,
+  },
+  
+  // Estilos compartidos
+  restauranteCard: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  restauranteNombre: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  restauranteInfo: {
+    fontSize: 14,
+    color: '#666',
+  },
+  historialButton: {
+    backgroundColor: '#3498db',
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  historialButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: '#666',
+    paddingHorizontal: 20,
+  },
+  
+  
+  // Estilos para móvil
+  containerMobile: {
+    padding: 10,
+  },
+  restauranteCardMobile: {
+    width: '100%',
+    marginHorizontal: 0,
+  },
+  comboCardMobile: {
+    width: '100%',
+    marginHorizontal: 0,
+  },
+  pedidoCardMobile: {
+    width: '100%',
+    marginHorizontal: 0,
+  },
+  modalContainerMobile: {
+    padding: 10,
+  },
+  summaryContainerMobile: {
+    padding: 15,
+  },
+  modalButtonsMobile: {
+    padding: 10,
+  },
+  quejaFormContainerMobile: {
+    padding: 15,
+  },
+  quejaCardMobile: {
+    width: '100%',
+    marginHorizontal: 0,
+  },
+  buttonsContainerMobile: {
+    flexDirection: 'column',
+    gap: 10,
+    paddingHorizontal: 0,
+  },
+  listContainerMobile: {
+    paddingHorizontal: 5,
+  },
+  
+  // Estilos para desktop
+  containerDesktop: {
+    padding: 20,
+    maxWidth: 1200,
+    marginHorizontal: 'auto',
+  },
+  restauranteCardDesktop: {
+    width: '48%',
+    marginHorizontal: '1%',
+  },
+  comboCardDesktop: {
+    width: '48%',
+    marginHorizontal: '1%',
+  },
+  pedidoCardDesktop: {
+    width: '48%',
+    marginHorizontal: '1%',
+  },
+  modalContainerDesktop: {
+    padding: 20,
+    maxWidth: 1000,
+    marginHorizontal: 'auto',
+  },
+  summaryContainerDesktop: {
+    padding: 20,
+    maxWidth: 800,
+    marginHorizontal: 'auto',
+  },
+  modalButtonsDesktop: {
+    padding: 20,
+    maxWidth: 800,
+    marginHorizontal: 'auto',
+  },
+  quejaFormContainerDesktop: {
+    padding: 20,
+    maxWidth: 800,
+    marginHorizontal: 'auto',
+  },
+  quejaCardDesktop: {
+    width: '48%',
+    marginHorizontal: '1%',
+  },
+  buttonsContainerDesktop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    maxWidth: 800,
+    marginHorizontal: 'auto',
+    marginBottom: 20,
+  },
+  listContainerDesktop: {
+    paddingHorizontal: 10,
+  },
+  
+  // Estilos compartidos
+  restauranteCard: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    marginVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  restauranteNombre: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  restauranteInfo: {
+    fontSize: 14,
+    color: '#666',
+  },
+  comboCard: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    marginVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  comboNombre: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  comboDescripcion: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 5,
+  },
+  comboPrecio: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#2ecc71',
+    marginBottom: 10,
+  },
+  comboActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: 100,
+    alignSelf: 'flex-end',
+  },
+  actionButton: {
+    backgroundColor: '#3498db',
+    borderRadius: 20,
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  actionButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  comboCantidad: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    backgroundColor: '#fff',
+  },
+  backButton: {
+    marginRight: 10,
+  },
+  backButtonText: {
+    fontSize: 24,
+    color: '#3498db',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+  },
+  summaryContainer: {
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  totalRow: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+  },
+  summaryLabel: {
+    fontSize: 16,
+    color: '#666',
+  },
+  summaryValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  totalLabel: {
+    fontSize: 18,
+    color: '#2c3e50',
+  },
+  totalValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2ecc71',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+  },
+  modalButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 25,
+    minWidth: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#e74c3c',
+  },
+  confirmButton: {
+    backgroundColor: '#2ecc71',
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  noPedidosText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: '#666',
+  },
+  pedidoCard: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    marginVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  pedidoTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    marginBottom: 5,
+  },
+  pedidoInfo: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 3,
+  },
+  buttonsContainer: {
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  historialButton: {
+    backgroundColor: '#3498db',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 5,
+  },
+  historialButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: '#666',
+    paddingHorizontal: 20,
+  },
+  quejaButton: {
+    backgroundColor: '#e74c3c',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+    alignSelf: 'flex-end',
+  },
+  quejaButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  quejaFormContainer: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    margin: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  inputContainer: {
+    marginBottom: 15,
+  },
+  inputLabel: {
+    fontSize: 16,
+    marginBottom: 5,
+    color: '#333',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 5,
+    padding: 10,
+    fontSize: 16,
+    backgroundColor: '#fff',
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  quejaCard: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    marginVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  quejaTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  quejaInfo: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 3,
+  },
+  quejaDescripcion: {
+    fontSize: 14,
+    color: '#333',
+    marginTop: 10,
+    fontStyle: 'italic',
+  },
+  noItemsText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: '#666',
+  },
+});
