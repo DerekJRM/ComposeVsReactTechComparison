@@ -128,3 +128,13 @@ CREATE TABLE PROYECTO_MOVILES.usuarios (
                       CHECK (rol IN ('CLIENTE','REPARTIDOR')),
   contrasena   VARCHAR2(200) NOT NULL
 );
+
+
+-- Alteracion para Usuarios de tipo Restaurante
+
+ALTER TABLE PROYECTO_MOVILES.usuarios
+DROP CONSTRAINT SYS_C008717;
+
+-- 2. Agregar una nueva que sí acepte los tres roles
+ALTER TABLE PROYECTO_MOVILES.usuarios
+ADD CONSTRAINT chk_roles_usuario CHECK (rol IN ('CLIENTE', 'REPARTIDOR', 'RESTAURANTE'));
