@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Size
 import org.hibernate.annotations.Immutable
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDateTime
 
 /**
  * Mapping for DB view
@@ -36,7 +37,7 @@ open class Factura protected constructor() {
         protected set
 
     @Column(name = "FECHA_PEDIDO")
-    open var fechaPedido: Instant? = null
+    open var fechaPedido: LocalDateTime? = null
         protected set
 
     @NotNull

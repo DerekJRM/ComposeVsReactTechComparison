@@ -7,6 +7,7 @@ import org.hibernate.annotations.ColumnDefault
 import org.hibernate.annotations.Formula
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "PEDIDOS", schema = "PROYECTO_MOVILES")
@@ -34,10 +35,10 @@ open class Pedido {
 
     @ColumnDefault("SYSTIMESTAMP")
     @Column(name = "FECHA_PEDIDO")
-    open var fechaPedido: Instant? = null
+    open var fechaPedido: LocalDateTime? = null
 
     @Column(name = "FECHA_ENTREGA")
-    open var fechaEntrega: Instant? = null
+    open var fechaEntrega: LocalDateTime? = null
 
     @NotNull
     @Column(name = "SUBTOTAL", nullable = false)
