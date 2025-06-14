@@ -21,7 +21,18 @@ import AuthButton from '../../components/AuthButton';
 import styles from './RestauranteStyle';
 import eatsLogo from '../../assets/eats_logo.png';
 
-const BASE_URL = 'http://192.168.100.4:8080';
+const getBaseUrl = () => {
+  if (__DEV__) {
+    return Platform.OS === 'android' 
+      ? 'http://192.168.100.4:8080/api' 
+      : 'http://localhost:8080/api';
+  }
+  return 'http://localhost:8080/api';
+};
+
+const BASE_URL = getBaseUrl();
+
+
 const { width, height } = Dimensions.get('window');
 const isMobile = width < 768;
 const isTablet = width >= 768 && width < 1024;
@@ -108,14 +119,14 @@ export default function RestauranteScreen({ restaurante, onLogout }) {
   };
 
   const fetchPedidos = async () => {
-    const response = await fetch(`${BASE_URL}/api/restaurantes/${restaurante.cedulaJuridica}/pedidos`);
+    const response = await fetch(`${BASE_URL}/restaurantes/${restaurante.cedula}/pedidos`);
     if (!response.ok) throw new Error('Error al obtener pedidos');
     const data = await response.json();
     setPedidos(data);
   };
 
   const fetchCombos = async () => {
-    const response = await fetch(`${BASE_URL}/api/restaurantes/${restaurante.cedulaJuridica}/combos`);
+    const response = await fetch(`${BASE_URL}/restaurantes/${restaurante.cedula}/combos`);
     if (!response.ok) throw new Error('Error al obtener combos');
     const data = await response.json();
     setCombos(data);
@@ -138,11 +149,11 @@ export default function RestauranteScreen({ restaurante, onLogout }) {
     try {
       setLoading(true);
       
-      const responseGet = await fetch(`${BASE_URL}/api/pedidos/${pedidoId}`);
+      const responseGet = await fetch(`${BASE_URL}/pedidos/${pedidoId}`);
       if (!responseGet.ok) throw new Error('No se pudo obtener el pedido');
       const pedidoActual = await responseGet.json();
       
-      const response = await fetch(`${BASE_URL}/api/pedidos/${pedidoId}`, {
+      const response = await fetch(`${BASE_URL}/pedidos/${pedidoId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -178,8 +189,8 @@ export default function RestauranteScreen({ restaurante, onLogout }) {
       };
 
       const url = currentCombo 
-        ? `${BASE_URL}/api/combos/${currentCombo.id}`
-        : `${BASE_URL}/api/combos`;
+        ? `${BASE_URL}/combos/${currentCombo.id}`
+        : `${BASE_URL}/combos`;
       
       const method = currentCombo ? 'PUT' : 'POST';
       
@@ -206,7 +217,7 @@ export default function RestauranteScreen({ restaurante, onLogout }) {
   const handleDeleteCombo = async (comboId) => {
     try {
       setLoading(true);
-      const response = await fetch(`${BASE_URL}/api/combos/${comboId}`, {
+      const response = await fetch(`${BASE_URL}/combos/${comboId}`, {
         method: 'DELETE'
       });
 
