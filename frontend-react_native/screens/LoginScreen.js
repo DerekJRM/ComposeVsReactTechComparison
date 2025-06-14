@@ -5,25 +5,94 @@ import {
   ActivityIndicator, 
   View,
   Text,
-  Platform
+  Platform,
+  StyleSheet,
+  Dimensions,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard
 } from 'react-native';
 import AuthInput from '../components/AuthInput';
 import AuthButton from '../components/AuthButton';
-import { styles } from '../styles/globalStyles';
 
 // Configuración especial para Android con Expo GO
 const getBaseUrl = () => {
   if (Platform.OS === 'android') {
-    return 'http://192.168.100.4:8080'; // Android Emulator
+    return 'http://192.168.100.4:8080';
   }
-  return 'http://localhost:8080'; // iOS simulator o web
+  return 'http://localhost:8080';
 };
 
 const API_BASE_URL = getBaseUrl();
+const { width } = Dimensions.get('window');
+
+// Estilos mejorados y responsive
+const styles = StyleSheet.create({
+  outerContainer: {
+    flex: 1,
+    backgroundColor: '#f8f9ff',
+  },
+  container: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 20,
+    maxWidth: 500,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: width < 768 ? 24 : 32,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  titulo: {
+    fontSize: width < 768 ? 24 : 28,
+    fontWeight: '700',
+    color: '#2d3436',
+    textAlign: 'center',
+    marginBottom: 24,
+    fontFamily: Platform.select({
+      ios: 'System',
+      android: 'Roboto',
+      default: 'Arial'
+    }),
+  },
+  inputContainer: {
+    marginBottom: width < 768 ? 16 : 20,
+  },
+  debugText: {
+    marginTop: 24,
+    fontSize: 12,
+    color: '#7f8c8d',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    backgroundColor: '#f1f2f6',
+    padding: 8,
+    borderRadius: 8,
+  },
+  loadingContainer: {
+    marginVertical: width < 768 ? 16 : 24,
+    alignItems: 'center',
+  },
+  footerText: {
+    marginTop: 24,
+    color: '#636e72',
+    textAlign: 'center',
+    fontSize: 14,
+  },
+});
 
 export default function LoginScreen({ onLogin }) {
-  const [cedula, setCedula] = useState('1-1111-1111'); // Valor por defecto para pruebas
-  const [contrasena, setContrasena] = useState('contrasena123'); // Valor por defecto para pruebas
+  const [cedula, setCedula] = useState('1-1111-1111');
+  const [contrasena, setContrasena] = useState('contrasena123');
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
@@ -35,7 +104,6 @@ export default function LoginScreen({ onLogin }) {
     setLoading(true);
     
     try {
-      // URL de prueba directa (puedes comentar esta línea)
       console.log('URL de prueba:', `${API_BASE_URL}/api/login/1-1111-1111/contrasena123`);
       
       const loginUrl = `${API_BASE_URL}/api/login/${encodeURIComponent(cedula)}/${encodeURIComponent(contrasena)}`;
@@ -46,7 +114,7 @@ export default function LoginScreen({ onLogin }) {
         headers: {
           'Accept': 'application/json',
         },
-        timeout: 10000, // 10 segundos de timeout
+        timeout: 10000,
       });
 
       if (!response.ok) {
@@ -65,7 +133,6 @@ export default function LoginScreen({ onLogin }) {
         throw new Error('Formato de respuesta inválido');
       }
 
-      // Login exitoso
       onLogin(userData);
     } catch (error) {
       console.error('Error completo:', error);
@@ -79,41 +146,60 @@ export default function LoginScreen({ onLogin }) {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.titulo}>CletaEats - Iniciar Sesión</Text>
-        
-        <AuthInput 
-          placeholder="Cédula (ej: 1-1111-1111)"
-          value={cedula}
-          onChangeText={setCedula}
-          keyboardType="default"
-        />
-        
-        <AuthInput 
-          placeholder="Contraseña"
-          value={contrasena}
-          onChangeText={setContrasena}
-          secureTextEntry
-        />
-        
-        {loading ? (
-          <ActivityIndicator size="large" color="#0000ff" />
-        ) : (
-          <AuthButton 
-            title="Ingresar" 
-            onPress={handleLogin} 
-            disabled={loading}
-          />
-        )}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.outerContainer}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView 
+          contentContainerStyle={styles.container}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.card}>
+            <Text style={styles.titulo}>CletaEats</Text>
+            
+            <View style={styles.inputContainer}>
+              <AuthInput 
+                placeholder="Cédula (ej: 1-1111-1111)"
+                value={cedula}
+                onChangeText={setCedula}
+                keyboardType="default"
+              />
+            </View>
+            
+            <View style={styles.inputContainer}>
+              <AuthInput 
+                placeholder="Contraseña"
+                value={contrasena}
+                onChangeText={setContrasena}
+                secureTextEntry
+              />
+            </View>
+            
+            <View style={styles.loadingContainer}>
+              {loading ? (
+                <ActivityIndicator size="large" color="#0984e3" />
+              ) : (
+                <AuthButton 
+                  title="Ingresar" 
+                  onPress={handleLogin} 
+                  disabled={loading}
+                />
+              )}
+            </View>
 
-        {/* Mensaje de ayuda para desarrollo */}
-        {__DEV__ && (
-          <Text style={styles.debugText}>
-            Modo desarrollo: {API_BASE_URL}
-          </Text>
-        )}
-      </ScrollView>
-    </View>
+            <Text style={styles.footerText}>
+              ¿Primera vez aquí? Contacta al administrador
+            </Text>
+
+            {__DEV__ && (
+              <Text style={styles.debugText}>
+                Modo desarrollo: {API_BASE_URL}
+              </Text>
+            )}
+          </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
