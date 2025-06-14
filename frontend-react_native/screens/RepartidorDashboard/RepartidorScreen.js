@@ -50,144 +50,164 @@ export default function RepartidorScreen({ repartidor, onLogout }) {
   };
 
   const fetchPedidosDisponibles = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${BASE_URL}/api/pedidos?estado=LISTO_PARA_REPARTIDOR`);
-      if (!response.ok) throw new Error('Error al obtener pedidos disponibles');
-      const data = await response.json();
-      setPedidosDisponibles(data);
-    } catch (error) {
-      console.error('Error fetching pedidos disponibles:', error);
-      Alert.alert('Error', 'No se pudieron cargar los pedidos disponibles');
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    // Cambiamos a usar el endpoint por estado
+    const response = await fetch(`${BASE_URL}/api/pedidos/estado/EN_PREPARACION`);
+    if (!response.ok) throw new Error('Error al obtener pedidos disponibles');
+    const data = await response.json();
+    
+    // Filtramos solo pedidos sin repartidor asignado
+    const pedidosSinRepartidor = data.filter(pedido => !pedido.repartidorId);
+    setPedidosDisponibles(pedidosSinRepartidor);
+  } catch (error) {
+    console.error('Error fetching pedidos disponibles:', error);
+    Alert.alert('Error', 'No se pudieron cargar los pedidos disponibles');
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const fetchPedidosAsignados = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${BASE_URL}/api/repartidores/${repartidor.cedula}/pedidos-asignados`);
-      if (!response.ok) throw new Error('Error al obtener pedidos asignados');
-      const data = await response.json();
-      setPedidosAsignados(data);
-    } catch (error) {
-      console.error('Error fetching pedidos asignados:', error);
-      Alert.alert('Error', 'No se pudieron cargar los pedidos asignados');
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchPedidosAsignados = async () => {
+  try {
+    setLoading(true);
+    // Usamos el endpoint que obtiene pedidos por repartidor
+    const response = await fetch(`${BASE_URL}/api/repartidores/${repartidor.cedula}/pedidos`);
+    if (!response.ok) throw new Error('Error al obtener pedidos asignados');
+    const data = await response.json();
+    
+    // Filtramos solo pedidos no entregados
+    const pedidosActivos = data.filter(pedido => pedido.estado !== 'ENTREGADO');
+    setPedidosAsignados(pedidosActivos);
+  } catch (error) {
+    console.error('Error fetching pedidos asignados:', error);
+    Alert.alert('Error', 'No se pudieron cargar los pedidos asignados');
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const fetchPedidosHistorial = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${BASE_URL}/api/repartidores/${repartidor.cedula}/pedidos-historial`);
-      if (!response.ok) throw new Error('Error al obtener historial de pedidos');
-      const data = await response.json();
-      setPedidosHistorial(data);
-    } catch (error) {
-      console.error('Error fetching historial de pedidos:', error);
-      Alert.alert('Error', 'No se pudo cargar el historial de pedidos');
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchPedidosHistorial = async () => {
+  try {
+    setLoading(true);
+    // Usamos el mismo endpoint pero filtramos por estado ENTREGADO
+    const response = await fetch(`${BASE_URL}/api/repartidores/${repartidor.cedula}/pedidos`);
+    if (!response.ok) throw new Error('Error al obtener historial de pedidos');
+    const data = await response.json();
+    
+    const historial = data.filter(pedido => pedido.estado === 'ENTREGADO');
+    setPedidosHistorial(historial);
+  } catch (error) {
+    console.error('Error fetching historial de pedidos:', error);
+    Alert.alert('Error', 'No se pudo cargar el historial de pedidos');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const aceptarPedido = async (pedidoId) => {
-    try {
-      setLoading(true);
-      
-      const response = await fetch(`${BASE_URL}/api/pedidos/${pedidoId}/asignar`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          repartidorId: repartidor.cedula,
-          estado: 'EN_CAMINO' // Cambiamos directamente a EN_CAMINO cuando acepta
-        })
-      });
+  try {
+    setLoading(true);
+    
+    // Primero obtenemos el pedido actual
+    const responseGet = await fetch(`${BASE_URL}/api/pedidos/${pedidoId}`);
+    if (!responseGet.ok) throw new Error('No se pudo obtener el pedido para asignar');
+    const pedidoActual = await responseGet.json();
+    
+    // Actualizamos el pedido con PUT
+    const response = await fetch(`${BASE_URL}/api/pedidos/${pedidoId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...pedidoActual, // Mantenemos todos los datos
+        repartidorId: repartidor.cedula,
+        estado: 'EN_CAMINO',
+        fechaPedido: pedidoActual.fechaPedido || new Date().toISOString()
+      })
+    });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.mensaje || 'Error al aceptar el pedido');
-      }
-
-      Alert.alert('Éxito', 'Pedido aceptado correctamente');
-      // Actualizamos los listados
-      await Promise.all([
-        fetchPedidosDisponibles(),
-        fetchPedidosAsignados()
-      ]);
-    } catch (error) {
-      console.error('Error aceptando pedido:', error);
-      Alert.alert('Error', error.message || 'No se pudo aceptar el pedido');
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.mensaje || 'Error al aceptar el pedido');
     }
-  };
+
+    Alert.alert('Éxito', 'Pedido aceptado correctamente');
+    
+    // Actualizamos las listas
+    await Promise.all([
+      fetchPedidosDisponibles(),
+      fetchPedidosAsignados()
+    ]);
+  } catch (error) {
+    console.error('Error aceptando pedido:', error);
+    Alert.alert('Error', error.message || 'No se pudo aceptar el pedido');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const rechazarPedido = async (pedidoId) => {
-    try {
-      setLoading(true);
-      
-      const response = await fetch(`${BASE_URL}/api/pedidos/${pedidoId}/rechazar`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          repartidorId: repartidor.cedula
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.mensaje || 'Error al rechazar el pedido');
-      }
-
-      Alert.alert('Éxito', 'Pedido rechazado correctamente');
-      fetchPedidosDisponibles();
-    } catch (error) {
-      console.error('Error rechazando pedido:', error);
-      Alert.alert('Error', error.message || 'No se pudo rechazar el pedido');
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    
+    // Simplemente no hacemos nada (el pedido queda disponible para otro repartidor)
+    Alert.alert('Info', 'Pedido rechazado, quedará disponible para otro repartidor');
+    
+    // Actualizamos la lista de disponibles
+    await fetchPedidosDisponibles();
+  } catch (error) {
+    console.error('Error rechazando pedido:', error);
+    Alert.alert('Error', 'No se pudo rechazar el pedido');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const actualizarEstadoPedido = async (pedidoId, nuevoEstado) => {
-    try {
-      setLoading(true);
-      
-      const response = await fetch(`${BASE_URL}/api/pedidos/${pedidoId}/estado`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          estado: nuevoEstado,
-          repartidorId: repartidor.cedula
-        })
-      });
+  try {
+    setLoading(true);
+    
+    // Obtenemos el pedido actual primero
+    const responseGet = await fetch(`${BASE_URL}/api/pedidos/${pedidoId}`);
+    if (!responseGet.ok) throw new Error('No se pudo obtener el pedido');
+    const pedidoActual = await responseGet.json();
+    
+    // Actualizamos el estado
+    const response = await fetch(`${BASE_URL}/api/pedidos/${pedidoId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...pedidoActual,
+        estado: nuevoEstado,
+        fechaEntrega: nuevoEstado === 'ENTREGADO' ? new Date().toISOString() : null
+      })
+    });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.mensaje || 'Error al actualizar estado del pedido');
-      }
-
-      Alert.alert('Éxito', 'Estado del pedido actualizado correctamente');
-      fetchPedidosAsignados();
-      fetchPedidosHistorial();
-      setModalVisible(false);
-    } catch (error) {
-      console.error('Error actualizando estado del pedido:', error);
-      Alert.alert('Error', error.message || 'No se pudo actualizar el estado del pedido');
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.mensaje || 'Error al actualizar estado del pedido');
     }
-  };
+
+    Alert.alert('Éxito', 'Estado del pedido actualizado correctamente');
+    
+    // Actualizamos las listas afectadas
+    await Promise.all([
+      fetchPedidosAsignados(),
+      fetchPedidosHistorial()
+    ]);
+    
+    setModalVisible(false);
+  } catch (error) {
+    console.error('Error actualizando estado del pedido:', error);
+    Alert.alert('Error', error.message || 'No se pudo actualizar el estado del pedido');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('es-CR', { 
