@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   View, 
   Text, 
-  ScrollView, 
   TouchableOpacity, 
   FlatList, 
   Modal, 
@@ -12,10 +11,12 @@ import {
   TextInput, 
   Dimensions,
   Animated,
-  Easing
+  Easing,
+  Image 
 } from 'react-native';
 import AuthButton from '../../components/AuthButton';
 import styles from './ClienteStyle';
+import eatsLogo from '../../assets/eats_logo.png';
 
 // Configuración de la API
 const getBaseUrl = () => {
@@ -33,7 +34,15 @@ const BASE_URL = getBaseUrl();
 const { width, height } = Dimensions.get('window');
 const isMobile = width < 768;
 
-export default function ClienteScreen({ cliente, onLogout }) {
+export default function ClienteScreen({ cliente = {}, onLogout }) {
+  // Estado inicial seguro con valores por defecto
+  const safeCliente = {
+    nombre: 'Usuario',
+    direccion: '',
+    cedula: '',
+    ...cliente
+  };
+
   const [restaurantes, setRestaurantes] = useState([]);
   const [combos, setCombos] = useState([]);
   const [pedidos, setPedidos] = useState([]);
@@ -54,6 +63,11 @@ export default function ClienteScreen({ cliente, onLogout }) {
   // Animaciones para el sidebar móvil
   const sidebarAnimation = useRef(new Animated.Value(-300)).current;
   const overlayAnimation = useRef(new Animated.Value(0)).current;
+
+  // Función para obtener el primer nombre
+  const getFirstName = () => {
+    return safeCliente.nombre?.split(' ')[0] || 'Usuario';
+  };
 
   const toggleSidebar = () => {
     if (sidebarVisible) {
@@ -90,7 +104,9 @@ export default function ClienteScreen({ cliente, onLogout }) {
 
   useEffect(() => {
     fetchRestaurantes();
-    fetchPedidosCliente();
+    if (safeCliente.cedula) {
+      fetchPedidosCliente();
+    }
   }, []);
 
   useEffect(() => {
@@ -105,14 +121,14 @@ export default function ClienteScreen({ cliente, onLogout }) {
   }, [selectedCombos]);
 
   useEffect(() => {
-    if (cliente?.cedula) {
+    if (safeCliente.cedula) {
       fetchQuejasCliente();
     }
-  }, [cliente]);
+  }, [safeCliente.cedula]);
 
   const fetchQuejasCliente = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/api/clientes/${cliente.cedula}/quejas`);
+      const response = await fetch(`${BASE_URL}/api/clientes/${safeCliente.cedula}/quejas`);
       if (!response.ok) throw new Error('Error al obtener quejas');
       const data = await response.json();
       setQuejasCliente(data);
@@ -139,7 +155,7 @@ export default function ClienteScreen({ cliente, onLogout }) {
       
       const quejaData = {
         repartidorId: repartidorId,
-        clienteId: cliente.cedula,
+        clienteId: safeCliente.cedula,
         descripcion: descripcionQueja
       };
 
@@ -200,7 +216,7 @@ export default function ClienteScreen({ cliente, onLogout }) {
   const fetchPedidosCliente = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${BASE_URL}/api/clientes/${cliente.cedula}/pedidos`);
+      const response = await fetch(`${BASE_URL}/api/clientes/${safeCliente.cedula}/pedidos`);
       if (!response.ok) throw new Error('Error al obtener pedidos');
       const data = await response.json();
       setPedidos(data);
@@ -257,12 +273,12 @@ export default function ClienteScreen({ cliente, onLogout }) {
       setLoading(true);
       
       const pedidoData = {
-        clienteId: cliente.cedula,
+        clienteId: safeCliente.cedula,
         restauranteId: selectedRestaurante.cedulaJuridica,
         estado: "EN_PREPARACION",
         subtotal: subtotal,
         costoTransporte: costoTransporte,
-        direccion: cliente.direccion
+        direccion: safeCliente.direccion
       };
 
       const pedidoResponse = await fetch(`${BASE_URL}/api/pedidos`, {
@@ -394,10 +410,14 @@ export default function ClienteScreen({ cliente, onLogout }) {
       {!isMobile && (
         <View style={styles.sidebar}>
           <View>
+            <Image 
+              source={eatsLogo} 
+              style={styles.sidebarLogo}
+            />
             <View style={styles.profileSection}>
               <Text style={styles.welcomeText}>Bienvenido</Text>
-              <Text style={styles.userName}>{cliente.nombre}</Text>
-              <Text style={styles.userAddress}>{cliente.direccion}</Text>
+              <Text style={styles.userName}>{safeCliente.nombre}</Text>
+              <Text style={styles.userInfo}>{safeCliente.direccion}</Text>
             </View>
             
             <TouchableOpacity 
@@ -443,10 +463,14 @@ export default function ClienteScreen({ cliente, onLogout }) {
           >
             <View style={{ flex: 1 }}>
               <View>
+                <Image 
+                  source={eatsLogo} 
+                  style={styles.sidebarLogo}
+                />
                 <View style={styles.profileSection}>
                   <Text style={styles.welcomeText}>Bienvenido</Text>
-                  <Text style={styles.userName}>{cliente.nombre}</Text>
-                  <Text style={styles.userAddress}>{cliente.direccion}</Text>
+                  <Text style={styles.userName}>{safeCliente.nombre}</Text>
+                  <Text style={styles.userInfo}>{safeCliente.direccion}</Text>
                 </View>
                 
                 <TouchableOpacity 
@@ -478,42 +502,45 @@ export default function ClienteScreen({ cliente, onLogout }) {
         {/* Header en móvil */}
         {isMobile && (
           <View style={styles.mobileHeader}>
-            <View style={styles.mobileHeaderTop}>
-              <View>
-                <Text style={styles.mobileWelcome}>Hola {cliente.nombre}</Text>
-                <Text style={styles.mobileAddress}>{cliente.direccion}</Text>
-              </View>
-            </View>
-            
-            <TouchableOpacity 
-              style={styles.mobileHistorialButton}
-              onPress={() => setPedidosModalVisible(true)}
-            >
-              <Text style={styles.mobileButtonText}>Ver mis pedidos ({pedidos.length})</Text>
-            </TouchableOpacity>
           </View>
         )}
 
         {/* Lista de restaurantes */}
         {loading && !modalVisible && !pedidosModalVisible ? (
-          <ActivityIndicator size="large" color="#0000ff" />
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#0000ff" />
+          </View>
         ) : (
-          <FlatList
-            data={restaurantes}
-            renderItem={renderRestauranteItem}
-            keyExtractor={item => item.cedulaJuridica}
-            contentContainerStyle={isMobile ? styles.mobileListContainer : styles.desktopListContainer}
-            ListEmptyComponent={
+          restaurantes.length === 0 ? (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
               <Text style={styles.emptyText}>No hay restaurantes disponibles</Text>
-            }
-            numColumns={isMobile ? 1 : 3}
-            columnWrapperStyle={!isMobile ? styles.desktopColumnWrapper : null}
-          />
+            </View>
+          ) : (
+            <>
+              <FlatList
+                data={restaurantes}
+                renderItem={renderRestauranteItem}
+                keyExtractor={item => item.cedulaJuridica}
+                contentContainerStyle={isMobile ? styles.mobileListContainer : styles.desktopListContainer}
+                numColumns={isMobile ? 1 : 3}
+                columnWrapperStyle={!isMobile ? styles.desktopColumnWrapper : null}
+              />
+              {/* Logo centrado debajo de la lista solo en mobile */}
+              {isMobile && (
+                <View style={styles.logoContainer}>
+                  <Image 
+                    source={eatsLogo} 
+                    style={styles.mobileLogo}
+                  />
+                </View>
+              )}
+            </>
+          )
         )}
       </View>
       
       {/* Botón flotante para abrir sidebar en móvil */}
-      {isMobile && (
+      {isMobile && !sidebarVisible && (
         <TouchableOpacity 
           style={styles.floatingSidebarButton}
           onPress={toggleSidebar}
@@ -643,7 +670,13 @@ export default function ClienteScreen({ cliente, onLogout }) {
           ) : (
             <>
               {pedidos.length === 0 ? (
-                <Text style={styles.noPedidosText}>No has realizado ningún pedido aún</Text>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                  <Image 
+                    source={eatsLogo} 
+                    style={styles.logo}
+                  />
+                  <Text style={styles.noPedidosText}>No has realizado ningún pedido aún</Text>
+                </View>
               ) : (
                 <FlatList
                   data={pedidos}

@@ -1,21 +1,45 @@
 import { StyleSheet, Platform } from 'react-native';
 
 export default StyleSheet.create({
-  // Nuevos estilos para el sidebar móvil
+  // Contenedores principales
+  containerBase: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+  },
+  mobileContainer: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
+  desktopContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: '#ffffff',
+  },
+
+  // Sidebar móvil mejorado
   mobileSidebar: {
     position: 'absolute',
     top: 0,
     left: 0,
     bottom: 0,
-    width: 280,
-    backgroundColor: '#fff',
+    width: 300,
+    backgroundColor: '#ffffff',
     zIndex: 1000,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 2, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
+    padding: 24,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 2, height: 0 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+      web: {
+        boxShadow: '4px 0 15px rgba(0,0,0,0.08)',
+      }
+    }),
   },
   
   sidebarOverlay: {
@@ -24,106 +48,150 @@ export default StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#000',
+    backgroundColor: 'rgba(0,0,0,0.4)',
     zIndex: 999,
   },
   
   sidebarToggleButton: {
     position: 'absolute',
-    bottom: 30,
-    right: 20,
+    bottom: 32,
+    right: 24,
     backgroundColor: '#4CAF50',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 100,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 6,
+      },
+      web: {
+        boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
+      }
+    }),
   },
   
   sidebarToggleButtonText: {
-    color: '#fff',
+    color: '#ffffff',
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
-  
-  // Ajustes para el header móvil
+
+  // Header móvil mejorado
   mobileHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 15,
-    backgroundColor: '#f8f8f8',
+    padding: 16,
+    backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#e9ecef',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+      }
+    }),
   },
   
   mobileWelcome: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#343a40',
     flex: 1,
   },
   
   mobileInfo: {
     fontSize: 14,
-    color: '#666',
-    marginTop: 5,
+    color: '#868e96',
+    marginTop: 6,
   },
-  
-  // Ajustes para el contenido móvil
+
+  // Contenido móvil mejorado
   mobileContent: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
+    padding: 16,
   },
-  
-  // Estilos existentes del sidebar (reutilizados para móvil)
+
+  // Sidebar común (mobile y desktop)
   sidebar: {
     width: 280,
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRightWidth: 1,
-    borderRightColor: '#e0e0e0',
+    backgroundColor: '#2c3e50',
+    padding: 24,
+    justifyContent: 'flex-start',
+    ...Platform.select({
+      web: {
+        boxShadow: '2px 0 10px rgba(0,0,0,0.1)',
+      }
+    }),
   },
   
   profileSection: {
-    marginBottom: 30,
+    marginBottom: 32,
+    borderBottomWidth: 1,
+    borderBottomColor: '#34495e',
+    paddingBottom: 24,
   },
   
   welcomeText: {
-    fontSize: 18,
-    color: '#666',
-    marginBottom: 5,
+    color: '#e9ecef',
+    fontSize: 16,
+    marginBottom: 8,
   },
   
   userName: {
+    color: '#ffffff',
     fontSize: 22,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 5,
+    fontWeight: '600',
+    marginBottom: 8,
   },
   
   userInfo: {
+    color: '#adb5bd',
     fontSize: 14,
-    color: '#666',
-    marginBottom: 3,
+    marginBottom: 6,
+    lineHeight: 20,
   },
   
   sidebarButton: {
-    paddingVertical: 15,
-    paddingHorizontal: 10,
-    marginBottom: 10,
-    borderRadius: 8,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#4dabf7',
+    padding: 16,
+    borderRadius: 10,
+    marginBottom: 16,
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#4dabf7',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   
   sidebarButtonText: {
+    color: '#ffffff',
+    fontWeight: '600',
     fontSize: 16,
-    color: '#333',
   },
   
   activeTab: {
@@ -131,140 +199,303 @@ export default StyleSheet.create({
   },
   
   activeTabText: {
-    color: '#fff',
+    color: '#ffffff',
   },
   
   logoutButton: {
-    marginTop: 20,
-    backgroundColor: '#f44336',
-    padding: 15,
-    borderRadius: 8,
-  },
-  
-  logoutButtonText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-  
-  mobileContainer: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  desktopContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: '#f5f5f5',
-  },
-  sidebar: {
-    width: 250,
-    backgroundColor: '#2c3e50',
-    padding: 20,
-    justifyContent: 'flex-start',
-  },
-  profileSection: {
-    marginBottom: 30,
-    borderBottomWidth: 1,
-    borderBottomColor: '#34495e',
-    paddingBottom: 20,
-  },
-  welcomeText: {
-    color: '#ecf0f1',
-    fontSize: 16,
-    marginBottom: 5,
-  },
-  userName: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  userInfo: {
-    color: '#bdc3c7',
-    fontSize: 14,
-    marginBottom: 3,
-  },
-  sidebarButton: {
-    backgroundColor: '#3498db',
-    padding: 15,
-    borderRadius: 5,
-    marginBottom: 15,
-    alignItems: 'center',
-  },
-  sidebarButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  logoutButton: {
-    backgroundColor: '#e74c3c',
     marginTop: 'auto',
-    marginBottom: 20,
+    backgroundColor: '#ff6b6b',
+    padding: 16,
+    borderRadius: 10,
+    marginBottom: 24,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#ff6b6b',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
+  
   logoutButtonText: {
-    color: '#fff',
+    color: '#ffffff',
+    textAlign: 'center',
+    fontWeight: '600',
+    fontSize: 16,
   },
-  mobileContent: {
-    flex: 1,
-    padding: 10,
-  },
+
+  // Contenido desktop
   desktopContent: {
     flex: 1,
-    padding: 20,
+    padding: 24,
   },
-  mobileHeader: {
-    marginBottom: 20,
-  },
-  mobileWelcome: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 5,
-  },
-  mobileInfo: {
-    fontSize: 14,
-    color: '#7f8c8d',
-    marginBottom: 3,
-  },
-  mobileButtons: {
-    flexDirection: 'column',
-    marginTop: 15,
-  },
-  mobileHistorialButton: {
-    backgroundColor: '#3498db',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-    alignItems: 'center',
-  },
-  mobileLogoutButton: {
-    marginTop: 5,
-  },
-  mobileButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
+
+  // Sección de títulos
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 15,
-    marginLeft: 10,
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#343a40',
+    marginBottom: 20,
+    marginLeft: 12,
   },
+
+  // Listas
   mobileListContainer: {
-    paddingBottom: 20,
+    paddingBottom: 24,
   },
   desktopListContainer: {
-    padding: 10,
+    padding: 12,
   },
   desktopColumnWrapper: {
     justifyContent: 'space-between',
-    marginBottom: 15,
+    marginBottom: 16,
   },
+
+  // Tarjetas de pedidos mejoradas
   pedidoCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 18,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 3,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+      }
+    }),
+  },
+  pedidoCardMobile: {
+    width: '100%',
+    marginBottom: 16,
+  },
+  pedidoCardDesktop: {
+    width: '48%',
+    marginBottom: 16,
+  },
+  pedidoTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#343a40',
+    marginBottom: 8,
+  },
+  pedidoInfo: {
+    fontSize: 14,
+    color: '#868e96',
+    marginBottom: 6,
+    lineHeight: 20,
+  },
+  pedidoEstado: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 8,
+    alignSelf: 'flex-end',
+  },
+  estadoEnPreparacion: {
+    color: '#fd7e14',
+  },
+  estadoEnCamino: {
+    color: '#4dabf7',
+  },
+  estadoEntregado: {
+    color: '#40c057',
+  },
+  estadoCancelado: {
+    color: '#ff6b6b',
+  },
+  estadoOtro: {
+    color: '#868e96',
+  },
+
+  // Texto vacío
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 24,
+    fontSize: 16,
+    color: '#868e96',
+    lineHeight: 24,
+  },
+
+  // Modales mejorados
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+  },
+  modalContainerMobile: {
+    padding: 16,
+  },
+  modalContainerDesktop: {
+    padding: 24,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+  backButton: {
+    marginRight: 12,
+  },
+  backButtonText: {
+    fontSize: 24,
+    color: '#4dabf7',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#343a40',
+  },
+  modalContent: {
+    padding: 16,
+  },
+
+  // Secciones de detalle
+  detailSection: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 18,
+    marginBottom: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  detailTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#343a40',
+    marginBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+    paddingBottom: 8,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  detailLabel: {
+    fontSize: 15,
+    color: '#868e96',
+    flex: 1,
+  },
+  detailValue: {
+    fontSize: 15,
+    color: '#343a40',
+    flex: 2,
+    textAlign: 'right',
+    fontWeight: '500',
+  },
+  comboDetailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f3f5',
+  },
+  comboDetailName: {
+    fontSize: 14,
+    color: '#343a40',
+    flex: 3,
+  },
+  comboDetailPrice: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#40c057',
+    flex: 1,
+    textAlign: 'right',
+  },
+
+  // Resumen de compra
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  totalRow: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#e9ecef',
+  },
+  summaryLabel: {
+    fontSize: 16,
+    color: '#495057',
+  },
+  summaryValue: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  totalLabel: {
+    fontSize: 18,
+    color: '#343a40',
+    fontWeight: '600',
+  },
+  totalValue: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#40c057',
+  },
+
+  // Inputs y formularios
+  inputContainer: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 16,
+    marginBottom: 8,
+    color: '#343a40',
+    fontWeight: '500',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#e9ecef',
     borderRadius: 8,
-    padding: 15,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: '#ffffff',
+  },
+  textArea: {
+    height: 120,
+    textAlignVertical: 'top',
+  },
+
+  // Contenedor de botones
+  buttonsContainer: {
+    marginTop: 16,
+  },
+
+  // Botones de acción
+  actionButton: {
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -275,230 +506,32 @@ export default StyleSheet.create({
       android: {
         elevation: 3,
       },
-      web: {
-        boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-      }
     }),
-  },
-  pedidoCardMobile: {
-    width: '100%',
-    marginBottom: 10,
-  },
-  pedidoCardDesktop: {
-    width: '48%',
-    marginBottom: 15,
-  },
-  pedidoTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 5,
-  },
-  pedidoInfo: {
-    fontSize: 14,
-    color: '#7f8c8d',
-    marginBottom: 3,
-  },
-  pedidoEstado: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginTop: 5,
-    alignSelf: 'flex-end',
-  },
-  estadoEnPreparacion: {
-    color: '#f39c12',
-  },
-  estadoEnCamino: {
-    color: '#3498db',
-  },
-  estadoEntregado: {
-    color: '#2ecc71',
-  },
-  estadoCancelado: {
-    color: '#e74c3c',
-  },
-  estadoOtro: {
-    color: '#7f8c8d',
-  },
-  emptyText: {
-    textAlign: 'center',
-    marginTop: 20,
-    fontSize: 16,
-    color: '#7f8c8d',
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  modalContainerMobile: {
-    padding: 10,
-  },
-  modalContainerDesktop: {
-    padding: 20,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    backgroundColor: '#fff',
-  },
-  backButton: {
-    marginRight: 10,
-  },
-  backButtonText: {
-    fontSize: 24,
-    color: '#3498db',
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-  },
-  modalContent: {
-    padding: 15,
-  },
-  detailSection: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 15,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
-  },
-  detailTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    paddingBottom: 5,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  detailLabel: {
-    fontSize: 15,
-    color: '#7f8c8d',
-    flex: 1,
-  },
-  detailValue: {
-    fontSize: 15,
-    color: '#2c3e50',
-    flex: 2,
-    textAlign: 'right',
-  },
-  comboDetailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 5,
-    paddingVertical: 5,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f5f5f5',
-  },
-  comboDetailName: {
-    fontSize: 14,
-    color: '#2c3e50',
-  },
-  comboDetailPrice: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#2ecc71',
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  totalRow: {
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-  },
-  summaryLabel: {
-    fontSize: 16,
-    color: '#666',
-  },
-  summaryValue: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  totalLabel: {
-    fontSize: 18,
-    color: '#2c3e50',
-  },
-  totalValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2ecc71',
-  },
-  inputContainer: {
-    marginBottom: 15,
-  },
-  inputLabel: {
-    fontSize: 16,
-    marginBottom: 5,
-    color: '#333',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
-    padding: 10,
-    fontSize: 16,
-    backgroundColor: '#fff',
-  },
-  textArea: {
-    height: 100,
-    textAlignVertical: 'top',
-  },
-  buttonsContainer: {
-    marginTop: 15,
-  },
-  actionButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 25,
-    borderRadius: 25,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10,
   },
   enCaminoButton: {
-    backgroundColor: '#3498db',
+    backgroundColor: '#4dabf7',
   },
   entregadoButton: {
-    backgroundColor: '#2ecc71',
+    backgroundColor: '#40c057',
   },
   actionButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: '#ffffff',
+    fontWeight: '600',
     fontSize: 16,
   },
+
+  // Tarjetas de quejas
   quejaCard: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 10,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 18,
+    marginBottom: 16,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowOpacity: 0.05,
+        shadowRadius: 6,
       },
       android: {
         elevation: 2,
@@ -514,48 +547,94 @@ export default StyleSheet.create({
   },
   quejaTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 5,
+    fontWeight: '600',
+    color: '#343a40',
+    marginBottom: 8,
   },
   quejaInfo: {
     fontSize: 14,
-    color: '#7f8c8d',
-    marginBottom: 3,
+    color: '#868e96',
+    marginBottom: 6,
   },
   quejaDescripcion: {
     fontSize: 14,
-    color: '#333',
-    marginTop: 10,
+    color: '#495057',
+    marginTop: 12,
     fontStyle: 'italic',
+    lineHeight: 22,
   },
+
+  // Pestañas
   tabContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginVertical: 10,
+    marginVertical: 12,
     flexWrap: 'wrap',
   },
   tabButton: {
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: '#3498db',
-    marginBottom: 5,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: '#4dabf7',
+    marginBottom: 8,
     minWidth: '30%',
     alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#4dabf7',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   tabButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: '#ffffff',
+    fontWeight: '600',
     fontSize: 14,
   },
   activeTab: {
-    backgroundColor: '#2c3e50',
+    backgroundColor: '#343a40',
   },
   aceptarButton: {
-    backgroundColor: '#2ecc71',
-    marginBottom: 5,
+    backgroundColor: '#40c057',
+    marginBottom: 8,
   },
   rechazarButton: {
-    backgroundColor: '#e74c3c',
+    backgroundColor: '#ff6b6b',
   },
+  // Agrega estos estilos a tu archivo RepartidorStyle.js
+
+logoContainer: {
+  width: '100%',
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingVertical: 20,
+  marginTop: 20,
+  backgroundColor: '#fff',
+},
+
+mobileLogo: {
+  width: 150,
+  height: 150,
+  resizeMode: 'contain',
+},
+
+menuButton: {
+  padding: 10,
+},
+
+menuButtonText: {
+  fontSize: 24,
+},
+
+sidebarLogo: {
+  width: 120,
+  height: 120,
+  resizeMode: 'contain',
+  alignSelf: 'center',
+  marginBottom: 10,
+},
 });

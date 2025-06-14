@@ -14,10 +14,12 @@ import {
   Platform,
   SafeAreaView,
   Animated,
-  Easing
+  Easing,
+  Image
 } from 'react-native';
 import AuthButton from '../../components/AuthButton';
 import styles from './RestauranteStyle';
+import eatsLogo from '../../assets/eats_logo.png';
 
 const BASE_URL = 'http://192.168.100.4:8080';
 const { width, height } = Dimensions.get('window');
@@ -362,15 +364,6 @@ export default function RestauranteScreen({ restaurante, onLogout }) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        {isMobile && (
-          <TouchableOpacity 
-            style={styles.menuButton}
-            onPress={toggleSidebar}
-          >
-            <Text style={styles.menuButtonText}>☰</Text>
-          </TouchableOpacity>
-        )}
-
         {/* Overlay para cerrar el sidebar en móvil */}
         {isMobile && sidebarVisible && (
           <Animated.View 
@@ -400,6 +393,10 @@ export default function RestauranteScreen({ restaurante, onLogout }) {
           ]}
         >
           <View style={styles.profileSection}>
+            <Image 
+              source={eatsLogo} 
+              style={styles.sidebarLogo}
+            />
             <Text style={styles.userName}>{restaurante.nombre}</Text>
             <Text style={styles.userInfo}>Cédula: {restaurante.cedulaJuridica}</Text>
           </View>
@@ -469,9 +466,30 @@ export default function RestauranteScreen({ restaurante, onLogout }) {
           {loading && !modalPedidoVisible && !modalComboVisible ? (
             <ActivityIndicator size="large" color="#0000ff" />
           ) : (
-            renderTabContent()
+            <>
+              {renderTabContent()}
+              {/* Logo centrado debajo del contenido solo en mobile */}
+              {isMobile && (
+                <View style={styles.logoContainer}>
+                  <Image 
+                    source={eatsLogo} 
+                    style={styles.mobileLogo}
+                  />
+                </View>
+              )}
+            </>
           )}
         </View>
+
+        {/* Botón flotante para abrir sidebar en móvil - POSICIÓN CORREGIDA (esquina inferior derecha) */}
+        {isMobile && !sidebarVisible && (
+          <TouchableOpacity 
+            style={styles.sidebarToggleButton}
+            onPress={toggleSidebar}
+          >
+            <Text style={styles.sidebarToggleButtonText}>☰</Text>
+          </TouchableOpacity>
+        )}
         
         {/* Modal de detalle de pedido */}
         <Modal

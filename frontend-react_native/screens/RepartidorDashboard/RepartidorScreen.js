@@ -13,10 +13,12 @@ import {
   Dimensions, 
   RefreshControl,
   Animated,
-  Easing
+  Easing,
+  Image
 } from 'react-native';
 import AuthButton from '../../components/AuthButton';
 import styles from './RepartidorStyle';
+import eatsLogo from '../../assets/eats_logo.png';
 
 // Configuración de la API
 const getBaseUrl = () => {
@@ -328,63 +330,96 @@ export default function RepartidorScreen({ repartidor, onLogout }) {
     switch (activeTab) {
       case 'disponibles':
         return (
-          <FlatList
-            data={pedidosDisponibles}
-            renderItem={renderPedidoDisponibleItem}
-            keyExtractor={item => item.id.toString()}
-            contentContainerStyle={isMobile ? styles.mobileListContainer : styles.desktopListContainer}
-            ListEmptyComponent={
-              <Text style={styles.emptyText}>No hay pedidos disponibles actualmente</Text>
-            }
-            numColumns={isMobile ? 1 : 2}
-            columnWrapperStyle={!isMobile ? styles.desktopColumnWrapper : null}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-              />
-            }
-          />
+          <>
+            <FlatList
+              data={pedidosDisponibles}
+              renderItem={renderPedidoDisponibleItem}
+              keyExtractor={item => item.id.toString()}
+              contentContainerStyle={isMobile ? styles.mobileListContainer : styles.desktopListContainer}
+              ListEmptyComponent={
+                <Text style={styles.emptyText}>No hay pedidos disponibles actualmente</Text>
+              }
+              numColumns={isMobile ? 1 : 2}
+              columnWrapperStyle={!isMobile ? styles.desktopColumnWrapper : null}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                />
+              }
+            />
+            {/* Logo centrado debajo de la lista solo en mobile */}
+            {isMobile && (
+              <View style={styles.logoContainer}>
+                <Image 
+                  source={eatsLogo} 
+                  style={styles.mobileLogo}
+                />
+              </View>
+            )}
+          </>
         );
       case 'asignados':
         return (
-          <FlatList
-            data={pedidosAsignados}
-            renderItem={renderPedidoAsignadoItem}
-            keyExtractor={item => item.id.toString()}
-            contentContainerStyle={isMobile ? styles.mobileListContainer : styles.desktopListContainer}
-            ListEmptyComponent={
-              <Text style={styles.emptyText}>No tienes pedidos asignados actualmente</Text>
-            }
-            numColumns={isMobile ? 1 : 2}
-            columnWrapperStyle={!isMobile ? styles.desktopColumnWrapper : null}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-              />
-            }
-          />
+          <>
+            <FlatList
+              data={pedidosAsignados}
+              renderItem={renderPedidoAsignadoItem}
+              keyExtractor={item => item.id.toString()}
+              contentContainerStyle={isMobile ? styles.mobileListContainer : styles.desktopListContainer}
+              ListEmptyComponent={
+                <Text style={styles.emptyText}>No tienes pedidos asignados actualmente</Text>
+              }
+              numColumns={isMobile ? 1 : 2}
+              columnWrapperStyle={!isMobile ? styles.desktopColumnWrapper : null}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                />
+              }
+            />
+            {/* Logo centrado debajo de la lista solo en mobile */}
+            {isMobile && (
+              <View style={styles.logoContainer}>
+                <Image 
+                  source={eatsLogo} 
+                  style={styles.mobileLogo}
+                />
+              </View>
+            )}
+          </>
         );
       case 'historial':
         return (
-          <FlatList
-            data={pedidosHistorial}
-            renderItem={renderPedidoHistorialItem}
-            keyExtractor={item => item.id.toString()}
-            contentContainerStyle={isMobile ? styles.mobileListContainer : styles.desktopListContainer}
-            ListEmptyComponent={
-              <Text style={styles.emptyText}>No tienes pedidos en tu historial</Text>
-            }
-            numColumns={isMobile ? 1 : 2}
-            columnWrapperStyle={!isMobile ? styles.desktopColumnWrapper : null}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-              />
-            }
-          />
+          <>
+            <FlatList
+              data={pedidosHistorial}
+              renderItem={renderPedidoHistorialItem}
+              keyExtractor={item => item.id.toString()}
+              contentContainerStyle={isMobile ? styles.mobileListContainer : styles.desktopListContainer}
+              ListEmptyComponent={
+                <Text style={styles.emptyText}>No tienes pedidos en tu historial</Text>
+              }
+              numColumns={isMobile ? 1 : 2}
+              columnWrapperStyle={!isMobile ? styles.desktopColumnWrapper : null}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                />
+              }
+            />
+            {/* Logo centrado debajo de la lista solo en mobile */}
+            {isMobile && (
+              <View style={styles.logoContainer}>
+                <Image 
+                  source={eatsLogo} 
+                  style={styles.mobileLogo}
+                />
+              </View>
+            )}
+          </>
         );
       default:
         return null;
@@ -396,6 +431,10 @@ export default function RepartidorScreen({ repartidor, onLogout }) {
       {!isMobile && (
         <View style={styles.sidebar}>
           <View style={styles.profileSection}>
+            <Image 
+              source={eatsLogo} 
+              style={styles.sidebarLogo}
+            />
             <Text style={styles.welcomeText}>Bienvenido</Text>
             <Text style={styles.userName}>{repartidor.nombre}</Text>
             <Text style={styles.userInfo}>Cédula: {repartidor.cedula}</Text>
@@ -448,6 +487,10 @@ export default function RepartidorScreen({ repartidor, onLogout }) {
             ]}
           >
             <View style={styles.profileSection}>
+              <Image 
+                source={eatsLogo} 
+                style={styles.sidebarLogo}
+              />
               <Text style={styles.welcomeText}>Bienvenido</Text>
               <Text style={styles.userName}>{repartidor.nombre}</Text>
               <Text style={styles.userInfo}>Cédula: {repartidor.cedula}</Text>
@@ -497,8 +540,6 @@ export default function RepartidorScreen({ repartidor, onLogout }) {
       <View style={isMobile ? styles.mobileContent : styles.desktopContent}>
         {isMobile && (
           <View style={styles.mobileHeader}>
-            {/* Eliminado el botón de menú de aquí */}
-            <Text style={styles.mobileWelcome}>Hola {repartidor.nombre}</Text>
           </View>
         )}
 
@@ -509,7 +550,7 @@ export default function RepartidorScreen({ repartidor, onLogout }) {
         )}
       </View>
       
-      {isMobile && (
+      {isMobile && !sidebarVisible && (
         <TouchableOpacity 
           style={styles.sidebarToggleButton}
           onPress={toggleSidebar}

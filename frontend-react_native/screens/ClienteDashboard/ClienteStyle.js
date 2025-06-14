@@ -2,113 +2,154 @@ import { StyleSheet, Platform } from 'react-native';
 
 export default StyleSheet.create({
   // Contenedores principales
-  mobileContainer: {
+  containerBase: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  mobileContainer: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
   },
   desktopContainer: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8f9fa',
   },
 
-  // Sidebar desktop
+  // Sidebar
   sidebar: {
-    width: 250,
-    backgroundColor: '#f8f8f8',
-    padding: 20,
+    width: 280,
+    backgroundColor: '#ffffff',
+    padding: 25,
     borderRightWidth: 1,
-    borderRightColor: '#ddd',
-    justifyContent: 'space-between', // Esto empujará el contenido hacia arriba y abajo
-    height: '100%', // Asegura que ocupe toda la altura
+    borderRightColor: '#e9ecef',
+    justifyContent: 'space-between',
+    height: '100%',
+    ...Platform.select({
+      web: {
+        boxShadow: '2px 0 10px rgba(0,0,0,0.05)',
+      },
+    }),
   },
   profileSection: {
-    marginBottom: 20,
-  },
-  logoutButton: {
-    marginTop: 'auto', // Esto empujará el botón hacia abajo
-    marginBottom: 20, // Espacio en la parte inferior
+    marginBottom: 30,
   },
   welcomeText: {
-    color: '#ecf0f1',
+    color: '#6c757d',
     fontSize: 16,
-    marginBottom: 5,
+    marginBottom: 8,
   },
   userName: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 5,
+    color: '#343a40',
+    fontSize: 22,
+    fontWeight: '600',
+    marginBottom: 8,
   },
   userAddress: {
-    color: '#bdc3c7',
+    color: '#adb5bd',
     fontSize: 14,
+    marginBottom: 20,
   },
   sidebarButton: {
-    backgroundColor: '#3498db',
-    padding: 15,
-    borderRadius: 5,
+    backgroundColor: '#4dabf7',
+    padding: 14,
+    borderRadius: 10,
     marginBottom: 15,
     alignItems: 'center',
+    shadowColor: '#4dabf7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 3,
   },
   sidebarButtonText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '600',
     fontSize: 16,
   },
   logoutButton: {
-    backgroundColor: '#e74c3c',
+    backgroundColor: '#ff6b6b',
+    padding: 14,
+    borderRadius: 10,
     marginTop: 'auto',
     marginBottom: 20,
+    alignItems: 'center',
   },
   logoutButtonText: {
     color: '#fff',
+    fontWeight: '600',
   },
 
   // Contenido principal
   mobileContent: {
     flex: 1,
-    padding: 10,
+    padding: 16,
   },
   desktopContent: {
     flex: 1,
-    padding: 20,
+    padding: 24,
   },
 
   // Header móvil
   mobileHeader: {
-    marginBottom: 20,
+    marginBottom: 24,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 2,
+      },
+      web: {
+        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+      }
+    }),
   },
   mobileWelcome: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 5,
+    fontWeight: '600',
+    color: '#343a40',
+    marginBottom: 6,
   },
   mobileAddress: {
     fontSize: 14,
-    color: '#7f8c8d',
-    marginBottom: 15,
+    color: '#868e96',
+    marginBottom: 16,
   },
   mobileButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 15,
+    marginBottom: 16,
   },
   mobileHistorialButton: {
-    backgroundColor: '#3498db',
-    padding: 10,
-    borderRadius: 5,
+    backgroundColor: '#4dabf7',
+    padding: 12,
+    borderRadius: 10,
     flex: 1,
-    marginRight: 10,
+    marginRight: 12,
     alignItems: 'center',
+    shadowColor: '#4dabf7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 3,
   },
   mobileLogoutButton: {
+    backgroundColor: '#ff6b6b',
+    padding: 12,
+    borderRadius: 10,
     flex: 1,
+    alignItems: 'center',
   },
   mobileButtonText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
 
   // Listas
@@ -116,166 +157,186 @@ export default StyleSheet.create({
     paddingBottom: 20,
   },
   desktopListContainer: {
-    padding: 10,
+    padding: 12,
   },
   desktopColumnWrapper: {
     justifyContent: 'space-between',
-    marginBottom: 15,
+    marginBottom: 16,
   },
 
   // Tarjetas de restaurante
   restauranteCard: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 15,
+    borderRadius: 12,
+    padding: 18,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
       },
       android: {
         elevation: 3,
       },
       web: {
-        boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
       }
     }),
   },
   mobileRestauranteCard: {
     width: '100%',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   desktopRestauranteCard: {
     width: '32%',
-    marginBottom: 15,
+    marginBottom: 16,
   },
   restauranteNombre: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 5,
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#343a40',
+    marginBottom: 6,
   },
   restauranteInfo: {
     fontSize: 14,
-    color: '#7f8c8d',
-    marginBottom: 3,
+    color: '#868e96',
+    marginBottom: 4,
+    lineHeight: 20,
   },
 
   // Tarjetas de combos
   comboCard: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 15,
+    borderRadius: 12,
+    padding: 18,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
       },
       android: {
         elevation: 3,
       },
+      web: {
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+      }
     }),
   },
   comboCardMobile: {
     width: '100%',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   comboCardDesktop: {
     width: '48%',
-    marginBottom: 15,
+    marginBottom: 16,
   },
   comboNombre: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 5,
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#343a40',
+    marginBottom: 6,
   },
   comboDescripcion: {
     fontSize: 14,
-    color: '#7f8c8d',
-    marginBottom: 5,
+    color: '#868e96',
+    marginBottom: 8,
+    lineHeight: 20,
   },
   comboPrecio: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#2ecc71',
-    marginBottom: 10,
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#40c057',
+    marginBottom: 12,
   },
   comboActions: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: 100,
+    width: 110,
     alignSelf: 'flex-end',
   },
   actionButton: {
-    backgroundColor: '#3498db',
+    backgroundColor: '#4dabf7',
     borderRadius: 20,
-    width: 30,
-    height: 30,
+    width: 32,
+    height: 32,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#4dabf7',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
   actionButtonText: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   comboCantidad: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    color: '#343a40',
   },
 
   // Tarjetas de pedidos
   pedidoCard: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 15,
+    borderRadius: 12,
+    padding: 18,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
       },
       android: {
         elevation: 3,
       },
+      web: {
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+      }
     }),
   },
   pedidoCardMobile: {
     width: '100%',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   pedidoCardDesktop: {
     width: '48%',
-    marginBottom: 15,
+    marginBottom: 16,
   },
   pedidoTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 5,
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#343a40',
+    marginBottom: 6,
   },
   pedidoInfo: {
     fontSize: 14,
-    color: '#7f8c8d',
-    marginBottom: 3,
+    color: '#868e96',
+    marginBottom: 4,
+    lineHeight: 20,
   },
   quejaButton: {
-    backgroundColor: '#e74c3c',
+    backgroundColor: '#ff6b6b',
     padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
+    borderRadius: 8,
+    marginTop: 12,
     alignSelf: 'flex-end',
+    shadowColor: '#ff6b6b',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
   quejaButtonText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
 
   // Modales
@@ -284,30 +345,32 @@ export default StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   modalContainerMobile: {
-    padding: 10,
+    padding: 16,
   },
   modalContainerDesktop: {
-    padding: 20,
+    padding: 24,
   },
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 15,
+    padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#e9ecef',
     backgroundColor: '#fff',
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
   },
   backButton: {
-    marginRight: 10,
+    marginRight: 12,
   },
   backButtonText: {
     fontSize: 24,
-    color: '#3498db',
+    color: '#4dabf7',
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2c3e50',
+    fontWeight: '600',
+    color: '#343a40',
   },
   listContainer: {
     paddingBottom: 20,
@@ -317,10 +380,26 @@ export default StyleSheet.create({
   summaryContainer: {
     backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: '#e9ecef',
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 3,
+      },
+      web: {
+        boxShadow: '0 -2px 8px rgba(0,0,0,0.05)',
+      }
+    }),
   },
   summaryContainerMobile: {
-    padding: 15,
+    padding: 16,
   },
   summaryContainerDesktop: {
     padding: 20,
@@ -328,30 +407,31 @@ export default StyleSheet.create({
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   totalRow: {
-    marginTop: 8,
-    paddingTop: 8,
+    marginTop: 12,
+    paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: '#e9ecef',
   },
   summaryLabel: {
     fontSize: 16,
-    color: '#666',
+    color: '#495057',
   },
   summaryValue: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   totalLabel: {
     fontSize: 18,
-    color: '#2c3e50',
+    color: '#343a40',
+    fontWeight: '600',
   },
   totalValue: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2ecc71',
+    fontWeight: '600',
+    color: '#40c057',
   },
 
   // Botones del modal
@@ -360,136 +440,224 @@ export default StyleSheet.create({
     justifyContent: 'space-around',
     backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: '#e9ecef',
+    paddingVertical: 16,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
   },
   modalButtonsMobile: {
-    padding: 10,
+    paddingHorizontal: 16,
   },
   modalButtonsDesktop: {
-    padding: 20,
+    paddingHorizontal: 24,
   },
   modalButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 25,
-    borderRadius: 25,
-    minWidth: 120,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 12,
+    minWidth: 140,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  cancelButton: {
-    backgroundColor: '#e74c3c',
-  },
-  confirmButton: {
-    backgroundColor: '#2ecc71',
-  },
-  modalButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-
-  // Formulario de quejas
-  quejaFormContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    margin: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
+  cancelButton: {
+    backgroundColor: '#ff6b6b',
+  },
+  confirmButton: {
+    backgroundColor: '#40c057',
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+
+  // Formulario de quejas
+  quejaFormContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    margin: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+      }
+    }),
+  },
   quejaFormContainerMobile: {
-    padding: 15,
+    padding: 16,
   },
   quejaFormContainerDesktop: {
     padding: 20,
   },
   inputContainer: {
-    marginBottom: 15,
+    marginBottom: 16,
   },
   inputLabel: {
     fontSize: 16,
-    marginBottom: 5,
-    color: '#333',
+    marginBottom: 8,
+    color: '#343a40',
+    fontWeight: '500',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
-    padding: 10,
+    borderColor: '#e9ecef',
+    borderRadius: 8,
+    padding: 12,
     fontSize: 16,
     backgroundColor: '#fff',
   },
   textArea: {
-    height: 100,
+    height: 120,
     textAlignVertical: 'top',
   },
 
   // Textos varios
   emptyText: {
     textAlign: 'center',
-    marginTop: 20,
+    marginTop: 24,
     fontSize: 16,
-    color: '#7f8c8d',
+    color: '#868e96',
   },
   noPedidosText: {
     textAlign: 'center',
-    marginTop: 20,
+    marginTop: 24,
     fontSize: 16,
-    color: '#666',
+    color: '#868e96',
   },
-    // Sidebar móvil
+
+  // Sidebar móvil
   mobileSidebar: {
-  position: 'absolute',
-  left: 0,
-  top: 0,
-  bottom: 0,
-  width: 250,
-  backgroundColor: '#f8f8f8',
-  padding: 20,
-  zIndex: 1000,
-  justifyContent: 'space-between', // Igual que en el desktop
-},
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 280,
+    backgroundColor: '#fff',
+    padding: 24,
+    zIndex: 1000,
+    justifyContent: 'space-between',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 5,
+      },
+      web: {
+        boxShadow: '2px 0 15px rgba(0,0,0,0.1)',
+      }
+    }),
+  },
   mobileOverlay: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.3)',
     zIndex: 99,
   },
   menuIcon: {
     fontSize: 24,
-    color: '#2c3e50',
-    marginRight: 15,
+    color: '#343a40',
+    marginRight: 16,
   },
   mobileHeaderTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 16,
   },
-  // Agrega estos estilos al final del archivo ClienteStyle.js
-floatingSidebarButton: {
-  position: 'absolute',
-  bottom: 30,
-  right: 30,
-  width: 60,
+
+  // Botón flotante para sidebar
+  floatingSidebarButton: {
+    position: 'absolute',
+    bottom: 30,
+    right: 30,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#4dabf7',
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+      web: {
+        boxShadow: '0 4px 12px rgba(77, 171, 247, 0.3)',
+      }
+    }),
+    zIndex: 100,
+  },
+  floatingSidebarButtonText: {
+    fontSize: 28,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  logo: {
+  width: 200,
+  height: 200,
+  resizeMode: 'contain',
+  marginBottom: 20,
+  alignSelf: 'center',
+},
+mobileLogo: {
+  width: 100,
+  height: 40,
+  resizeMode: 'contain',
+},
+sidebarLogo: {
+  width: 150,
   height: 60,
-  borderRadius: 30,
-  backgroundColor: '#3498db',
-  justifyContent: 'center',
+  resizeMode: 'contain',
+  alignSelf: 'center',
+  marginBottom: 20,
+},
+// Agrega estos estilos a tu archivo ClienteStyle.js
+
+logoContainer: {
+  width: '100%',
   alignItems: 'center',
-  elevation: 8,
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.3,
-  shadowRadius: 4,
-  zIndex: 100,
+  justifyContent: 'center',
+  paddingVertical: 20,
+  marginTop: 20,
+  backgroundColor: '#fff',
 },
-floatingSidebarButtonText: {
-  fontSize: 28,
-  color: '#fff',
+
+mobileLogo: {
+  width: 150,
+  height: 150,
+  resizeMode: 'contain',
 },
+
+menuButton: {
+  padding: 10,
+},
+
+menuButtonText: {
+  fontSize: 24,
+},
+
 });
