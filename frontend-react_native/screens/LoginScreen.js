@@ -90,8 +90,8 @@ const styles = StyleSheet.create({
 });
 
 export default function LoginScreen({ onLogin }) {
-  const [cedula, setCedula] = useState('4-4444-4444');
-  const [contrasena, setContrasena] = useState('reparto123');
+  const [cedula, setCedula] = useState('3101123456');
+  const [contrasena, setContrasena] = useState('ticoRico123');
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
