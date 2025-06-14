@@ -22,7 +22,7 @@ const getBaseUrl = () => {
       ? 'http://192.168.100.4:8080/api' 
       : 'http://localhost:8080/api';
   }
-  return 'https://tu-servidor-produccion.com/api'; // Reemplazar en producción
+  return 'http://localhost:8080/api'; // Reemplazar en producción
 };
 
 const API_BASE_URL = getBaseUrl();
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
 
 export default function LoginScreen({ onLogin }) {
   const [cedula, setCedula] = useState('4-4444-4444');
-  const [contrasena, setContrasena] = useState('repartidor123');
+  const [contrasena, setContrasena] = useState('reparto123');
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
