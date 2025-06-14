@@ -15,18 +15,20 @@ import {
 import AuthInput from '../components/AuthInput';
 import AuthButton from '../components/AuthButton';
 
-// Configuración especial para Android con Expo GO
+// Configuración de la URL base
 const getBaseUrl = () => {
-  if (Platform.OS === 'android') {
-    return 'http://192.168.100.4:8080';
+  if (__DEV__) {
+    return Platform.OS === 'android' 
+      ? 'http://192.168.100.4:8080/api' 
+      : 'http://localhost:8080/api';
   }
-  return 'http://localhost:8080';
+  return 'https://tu-servidor-produccion.com/api'; // Reemplazar en producción
 };
 
 const API_BASE_URL = getBaseUrl();
 const { width } = Dimensions.get('window');
 
-// Estilos mejorados y responsive
+// Estilos
 const styles = StyleSheet.create({
   outerContainer: {
     flex: 1,
@@ -45,10 +47,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: width < 768 ? 24 : 32,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 3,
@@ -91,11 +90,12 @@ const styles = StyleSheet.create({
 });
 
 export default function LoginScreen({ onLogin }) {
-  const [cedula, setCedula] = useState('1-1111-1111');
-  const [contrasena, setContrasena] = useState('contrasena123');
+  const [cedula, setCedula] = useState('4-4444-4444');
+  const [contrasena, setContrasena] = useState('repartidor123');
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    // Validación básica
     if (!cedula.trim() || !contrasena.trim()) {
       Alert.alert('Error', 'Por favor complete todos los campos');
       return;
@@ -104,41 +104,42 @@ export default function LoginScreen({ onLogin }) {
     setLoading(true);
     
     try {
-      console.log('URL de prueba:', `${API_BASE_URL}/api/login/1-1111-1111/contrasena123`);
-      
-      const loginUrl = `${API_BASE_URL}/api/login/${encodeURIComponent(cedula)}/${encodeURIComponent(contrasena)}`;
+      // Construye la URL con el prefijo api/ incluido en la base
+      const loginUrl = `${API_BASE_URL}/login/${encodeURIComponent(cedula.trim())}/${encodeURIComponent(contrasena.trim())}`;
       console.log('Conectando a:', loginUrl);
 
       const response = await fetch(loginUrl, {
         method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
+        headers: { 'Accept': 'application/json' },
         timeout: 10000,
       });
 
+      // Manejo de errores HTTP
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          response.status === 401 ? 'Credenciales inválidas' : 
-          response.status === 404 ? 'Usuario no encontrado' : 
-          `Error del servidor (${response.status})`
-        );
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.mensaje || 
+          (response.status === 401 ? 'Credenciales inválidas' : 
+           response.status === 404 ? 'Usuario no encontrado' : 
+           `Error del servidor (${response.status})`);
+        
+        throw new Error(errorMessage);
       }
 
       const userData = await response.json();
-      console.log('Respuesta recibida:', userData);
-
+      
+      // Validación de respuesta
       if (!userData.cedula) {
-        throw new Error('Formato de respuesta inválido');
+        throw new Error('Formato de respuesta inválido del servidor');
       }
 
+      // Login exitoso
       onLogin(userData);
+      
     } catch (error) {
-      console.error('Error completo:', error);
+      console.error('Error en login:', error);
       Alert.alert(
-        'Error de conexión', 
-        `No se pudo conectar al servidor backend.\n\nAsegúrate que:\n1. El servidor esté corriendo\n2. La IP sea correcta\n3. No haya problemas de firewall\n\nError técnico: ${error.message}`
+        'Error de autenticación', 
+        error.message || 'No se pudo conectar al servidor. Verifique:\n1. El servidor esté activo\n2. La conexión de red\n3. Las credenciales'
       );
     } finally {
       setLoading(false);
@@ -164,6 +165,7 @@ export default function LoginScreen({ onLogin }) {
                 value={cedula}
                 onChangeText={setCedula}
                 keyboardType="default"
+                autoCapitalize="none"
               />
             </View>
             
@@ -173,6 +175,7 @@ export default function LoginScreen({ onLogin }) {
                 value={contrasena}
                 onChangeText={setContrasena}
                 secureTextEntry
+                autoCapitalize="none"
               />
             </View>
             
@@ -194,7 +197,7 @@ export default function LoginScreen({ onLogin }) {
 
             {__DEV__ && (
               <Text style={styles.debugText}>
-                Modo desarrollo: {API_BASE_URL}
+                Endpoint: {API_BASE_URL}/login/cedula/contrasena
               </Text>
             )}
           </View>
