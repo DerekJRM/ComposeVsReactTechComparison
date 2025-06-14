@@ -11,16 +11,30 @@ import com.example.frontend_jetpack_compose.ui.screens.*
 import com.example.frontend_jetpack_compose.data.LoginViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavGraph(navController: NavHostController) {
     val loginViewModel: LoginViewModel = viewModel()
     val isLoggedIn by loginViewModel.isLoggedIn.collectAsState()
+    val rol by loginViewModel.rol.collectAsState()
+    val cliente by loginViewModel.cliente.collectAsState()
+    val repartidor by loginViewModel.repartidor.collectAsState()
+    val restaurante by loginViewModel.restaurante.collectAsState()
 
     NavHost(
         navController = navController,
-        startDestination = /*if (isLoggedIn) "lista_restaurantes" else*/ "login"
+        startDestination = if (isLoggedIn) {
+            when (rol) {
+                "CLIENTE" -> "restaurantes"
+                "RESTAURANTE" -> "combos/${restaurante?.cedulaJuridica ?: ""}/${rol.toString()}"
+                else -> "perfil"
+            }
+        } else {
+            "login"
+        }
     ) {
         composable("login") {
             LoginScreen(
@@ -29,10 +43,44 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
 
-        if (isLoggedIn) {
-//            composable("registro_cliente") {
-//                RegistroClienteScreen(navController = navController)
-//            }
+        composable("registro") {
+            RegistroScreen(
+                navController = navController
+            )
+        }
+
+        composable("perfil") {
+            PerfilScreen(
+                rol = rol.toString(),
+                cliente = cliente,
+                repartidor = repartidor,
+                restaurante = restaurante
+            )
+        }
+
+        composable(
+            "combos/{restauranteId}/{rol}",
+            arguments = listOf(
+                navArgument("restauranteId") { type = NavType.StringType },
+                navArgument("rol") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val restauranteId = backStackEntry.arguments?.getString("restauranteId") ?: ""
+            val rol = backStackEntry.arguments?.getString("rol") ?: ""
+            CombosScreen(
+                navController = navController,
+                restauranteId = restauranteId,
+                rol = rol,
+                cliente = cliente,
+            )
+        }
+
+        composable("restaurantes") {
+            RestaurantesScreen(
+                navController = navController,
+                rol = rol.toString()
+            )
+        }
 //
 //            composable("lista_restaurantes") {
 //                ListaRestaurantesScreen(navController = navController)
@@ -51,6 +99,6 @@ fun AppNavGraph(navController: NavHostController) {
 //            }
 //
 //            composable("historial") { HistorialPedidosScreen(navController = navController) }
-        }
+
     }
 }

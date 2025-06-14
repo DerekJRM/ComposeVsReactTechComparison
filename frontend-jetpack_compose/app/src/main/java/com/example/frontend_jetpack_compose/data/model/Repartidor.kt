@@ -2,11 +2,11 @@ package com.example.frontend_jetpack_compose.data.model
 
 data class Repartidor(
     val cedula: String,
-    val nombre: String,
-    val email: String,
-    val direccion: String,
-    val telefono: String,
-    val numTarjeta: String,
+    var nombre: String,
+    var email: String,
+    var direccion: String,
+    var telefono: String,
+    var numTarjeta: String,
     val estado: String,
     val distanciaPedidoKm: Double,
     val kmRecorridosDiarios: Double,

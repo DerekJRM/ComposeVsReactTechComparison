@@ -2,11 +2,11 @@ package com.example.frontend_jetpack_compose.data.model
 
 data class Cliente(
     val cedula: String,
-    val nombre: String,
-    val direccion: String,
-    val telefono: String,
-    val email: String,
-    val numTarjeta: String,
+    var nombre: String,
+    var direccion: String,
+    var telefono: String,
+    var email: String,
+    var numTarjeta: String,
     val estado: String,
     val newItem: Boolean = false
 )

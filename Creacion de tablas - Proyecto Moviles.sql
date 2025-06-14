@@ -55,6 +55,7 @@ CREATE TABLE PROYECTO_MOVILES.combos (
   restaurante_id  VARCHAR2(20) NOT NULL REFERENCES PROYECTO_MOVILES.restaurantes(cedula_juridica),
   combo_num       NUMBER(2) NOT NULL CHECK (combo_num BETWEEN 1 AND 9),
   precio          NUMBER(10,2) NOT NULL,
+  descripcion VARCHAR2(200) NOT NULL,
   UNIQUE(restaurante_id, combo_num)
 );
 
@@ -125,7 +126,7 @@ CREATE INDEX idx_repartidores_estado ON PROYECTO_MOVILES.repartidores(estado);
 CREATE TABLE PROYECTO_MOVILES.usuarios (
   cedula          VARCHAR2(12) NOT NULL PRIMARY KEY,
   rol             VARCHAR2(12) DEFAULT 'CLIENTE'
-                      CHECK (rol IN ('CLIENTE','REPARTIDOR')),
+                      CHECK (rol IN ('CLIENTE','REPARTIDOR', 'RESTAURANTE')),
   contrasena   VARCHAR2(200) NOT NULL
 );
 
@@ -141,3 +142,18 @@ ADD CONSTRAINT chk_roles_usuario CHECK (rol IN ('CLIENTE', 'REPARTIDOR', 'RESTAU
 
 ALTER TABLE PROYECTO_MOVILES.combos
 ADD descripcion VARCHAR2(200);
+
+-- quitarle el check de combo_num y dejarlo como number normal
+
+SELECT constraint_name, search_condition
+FROM user_constraints
+WHERE table_name = 'COMBOS'
+  AND constraint_type = 'C';
+
+-- cambiar ese SYS_C0019230 por el que le tire el select
+
+ALTER TABLE PROYECTO_MOVILES.combos
+DROP CONSTRAINT SYS_C0019230;
+
+ALTER TABLE PROYECTO_MOVILES.combos
+MODIFY combo_num NUMBER;
