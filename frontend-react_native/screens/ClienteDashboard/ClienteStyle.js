@@ -4,22 +4,22 @@ export default StyleSheet.create({
   // Contenedores principales
   containerBase: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#ffffff', // Fondo blanco
   },
   mobileContainer: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#ffffff', // Fondo blanco
   },
   desktopContainer: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#ffffff', // Fondo blanco
   },
 
-  // Sidebar
+  // Sidebar (modificado a negro como Uber Eats)
   sidebar: {
     width: 280,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#000000', // Fondo negro
     padding: 25,
     borderRightWidth: 1,
     borderRightColor: '#e9ecef',
@@ -27,7 +27,7 @@ export default StyleSheet.create({
     height: '100%',
     ...Platform.select({
       web: {
-        boxShadow: '2px 0 10px rgba(0,0,0,0.05)',
+        boxShadow: '2px 0 10px rgba(0,0,0,0.1)',
       },
     }),
   },
@@ -35,40 +35,40 @@ export default StyleSheet.create({
     marginBottom: 30,
   },
   welcomeText: {
-    color: '#6c757d',
+    color: '#a0a0a0', // Gris claro para texto secundario
     fontSize: 16,
     marginBottom: 8,
   },
   userName: {
-    color: '#343a40',
+    color: '#ffffff', // Blanco para texto principal
     fontSize: 22,
     fontWeight: '600',
     marginBottom: 8,
   },
   userAddress: {
-    color: '#adb5bd',
+    color: '#707070', // Gris medio
     fontSize: 14,
     marginBottom: 20,
   },
   sidebarButton: {
-    backgroundColor: '#4dabf7',
+    backgroundColor: '#00cc6a', // Verde Uber Eats
     padding: 14,
     borderRadius: 10,
     marginBottom: 15,
     alignItems: 'center',
-    shadowColor: '#4dabf7',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 3,
   },
   sidebarButtonText: {
-    color: '#fff',
+    color: '#ffffff', // Texto blanco
     fontWeight: '600',
     fontSize: 16,
   },
   logoutButton: {
-    backgroundColor: '#ff6b6b',
+    backgroundColor: '#333333', // Gris oscuro para botón de logout
     padding: 14,
     borderRadius: 10,
     marginTop: 'auto',
@@ -76,7 +76,7 @@ export default StyleSheet.create({
     alignItems: 'center',
   },
   logoutButtonText: {
-    color: '#fff',
+    color: '#ffffff', // Texto blanco
     fontWeight: '600',
   },
 
@@ -84,16 +84,18 @@ export default StyleSheet.create({
   mobileContent: {
     flex: 1,
     padding: 16,
+    backgroundColor: '#ffffff', // Fondo blanco
   },
   desktopContent: {
     flex: 1,
     padding: 24,
+    backgroundColor: '#ffffff', // Fondo blanco
   },
 
   // Header móvil
   mobileHeader: {
     marginBottom: 24,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff', // Fondo blanco
     borderRadius: 12,
     padding: 16,
     ...Platform.select({
@@ -114,12 +116,12 @@ export default StyleSheet.create({
   mobileWelcome: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#343a40',
+    color: '#000000', // Texto negro
     marginBottom: 6,
   },
   mobileAddress: {
     fontSize: 14,
-    color: '#868e96',
+    color: '#707070', // Gris medio
     marginBottom: 16,
   },
   mobileButtons: {
@@ -128,27 +130,27 @@ export default StyleSheet.create({
     marginBottom: 16,
   },
   mobileHistorialButton: {
-    backgroundColor: '#4dabf7',
+    backgroundColor: '#00cc6a', // Verde Uber Eats
     padding: 12,
     borderRadius: 10,
     flex: 1,
     marginRight: 12,
     alignItems: 'center',
-    shadowColor: '#4dabf7',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 3,
   },
   mobileLogoutButton: {
-    backgroundColor: '#ff6b6b',
+    backgroundColor: '#333333', // Gris oscuro
     padding: 12,
     borderRadius: 10,
     flex: 1,
     alignItems: 'center',
   },
   mobileButtonText: {
-    color: '#fff',
+    color: '#ffffff', // Texto blanco
     fontWeight: '600',
   },
 
@@ -166,9 +168,11 @@ export default StyleSheet.create({
 
   // Tarjetas de restaurante
   restauranteCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff', // Fondo blanco
     borderRadius: 12,
     padding: 18,
+    borderWidth: 1,
+    borderColor: '#f0f0f0', // Borde gris muy claro
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -195,21 +199,23 @@ export default StyleSheet.create({
   restauranteNombre: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#343a40',
+    color: '#000000', // Texto negro
     marginBottom: 6,
   },
   restauranteInfo: {
     fontSize: 14,
-    color: '#868e96',
+    color: '#707070', // Gris medio
     marginBottom: 4,
     lineHeight: 20,
   },
 
   // Tarjetas de combos
   comboCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff', // Fondo blanco
     borderRadius: 12,
     padding: 18,
+    borderWidth: 1,
+    borderColor: '#f0f0f0', // Borde gris muy claro
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -236,19 +242,19 @@ export default StyleSheet.create({
   comboNombre: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#343a40',
+    color: '#000000', // Texto negro
     marginBottom: 6,
   },
   comboDescripcion: {
     fontSize: 14,
-    color: '#868e96',
+    color: '#707070', // Gris medio
     marginBottom: 8,
     lineHeight: 20,
   },
   comboPrecio: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#40c057',
+    color: '#00cc6a', // Verde Uber Eats
     marginBottom: 12,
   },
   comboActions: {
@@ -259,34 +265,36 @@ export default StyleSheet.create({
     alignSelf: 'flex-end',
   },
   actionButton: {
-    backgroundColor: '#4dabf7',
+    backgroundColor: '#00cc6a', // Verde Uber Eats
     borderRadius: 20,
     width: 32,
     height: 32,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#4dabf7',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
   actionButtonText: {
-    color: '#fff',
+    color: '#ffffff', // Texto blanco
     fontSize: 18,
     fontWeight: '600',
   },
   comboCantidad: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#343a40',
+    color: '#000000', // Texto negro
   },
 
   // Tarjetas de pedidos
   pedidoCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff', // Fondo blanco
     borderRadius: 12,
     padding: 18,
+    borderWidth: 1,
+    borderColor: '#f0f0f0', // Borde gris muy claro
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -313,36 +321,36 @@ export default StyleSheet.create({
   pedidoTitle: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#343a40',
+    color: '#000000', // Texto negro
     marginBottom: 6,
   },
   pedidoInfo: {
     fontSize: 14,
-    color: '#868e96',
+    color: '#707070', // Gris medio
     marginBottom: 4,
     lineHeight: 20,
   },
   quejaButton: {
-    backgroundColor: '#ff6b6b',
+    backgroundColor: '#333333', // Gris oscuro
     padding: 10,
     borderRadius: 8,
     marginTop: 12,
     alignSelf: 'flex-end',
-    shadowColor: '#ff6b6b',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
   quejaButtonText: {
-    color: '#fff',
+    color: '#ffffff', // Texto blanco
     fontWeight: '600',
   },
 
   // Modales
   modalContainer: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#ffffff', // Fondo blanco
   },
   modalContainerMobile: {
     padding: 16,
@@ -356,7 +364,7 @@ export default StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#e9ecef',
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff', // Fondo blanco
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
   },
@@ -365,12 +373,12 @@ export default StyleSheet.create({
   },
   backButtonText: {
     fontSize: 24,
-    color: '#4dabf7',
+    color: '#00cc6a', // Verde Uber Eats
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#343a40',
+    color: '#000000', // Texto negro
   },
   listContainer: {
     paddingBottom: 20,
@@ -378,7 +386,7 @@ export default StyleSheet.create({
 
   // Resumen de compra
   summaryContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff', // Fondo blanco
     borderTopWidth: 1,
     borderTopColor: '#e9ecef',
     borderBottomLeftRadius: 12,
@@ -417,28 +425,29 @@ export default StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 16,
-    color: '#495057',
+    color: '#707070', // Gris medio
   },
   summaryValue: {
     fontSize: 16,
     fontWeight: '600',
+    color: '#000000', // Texto negro
   },
   totalLabel: {
     fontSize: 18,
-    color: '#343a40',
+    color: '#000000', // Texto negro
     fontWeight: '600',
   },
   totalValue: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#40c057',
+    color: '#00cc6a', // Verde Uber Eats
   },
 
   // Botones del modal
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff', // Fondo blanco
     borderTopWidth: 1,
     borderTopColor: '#e9ecef',
     paddingVertical: 16,
@@ -465,22 +474,24 @@ export default StyleSheet.create({
     elevation: 3,
   },
   cancelButton: {
-    backgroundColor: '#ff6b6b',
+    backgroundColor: '#333333', // Gris oscuro
   },
   confirmButton: {
-    backgroundColor: '#40c057',
+    backgroundColor: '#00cc6a', // Verde Uber Eats
   },
   modalButtonText: {
-    color: '#fff',
+    color: '#ffffff', // Texto blanco
     fontWeight: '600',
     fontSize: 16,
   },
 
   // Formulario de quejas
   quejaFormContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff', // Fondo blanco
     borderRadius: 12,
     margin: 20,
+    borderWidth: 1,
+    borderColor: '#f0f0f0', // Borde gris muy claro
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -508,7 +519,7 @@ export default StyleSheet.create({
   inputLabel: {
     fontSize: 16,
     marginBottom: 8,
-    color: '#343a40',
+    color: '#000000', // Texto negro
     fontWeight: '500',
   },
   input: {
@@ -517,7 +528,8 @@ export default StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff', // Fondo blanco
+    color: '#000000', // Texto negro
   },
   textArea: {
     height: 120,
@@ -529,13 +541,13 @@ export default StyleSheet.create({
     textAlign: 'center',
     marginTop: 24,
     fontSize: 16,
-    color: '#868e96',
+    color: '#707070', // Gris medio
   },
   noPedidosText: {
     textAlign: 'center',
     marginTop: 24,
     fontSize: 16,
-    color: '#868e96',
+    color: '#707070', // Gris medio
   },
 
   // Sidebar móvil
@@ -545,7 +557,7 @@ export default StyleSheet.create({
     top: 0,
     bottom: 0,
     width: 280,
-    backgroundColor: '#fff',
+    backgroundColor: '#000000', // Fondo negro
     padding: 24,
     zIndex: 1000,
     justifyContent: 'space-between',
@@ -570,12 +582,12 @@ export default StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.5)', // Overlay más oscuro
     zIndex: 99,
   },
   menuIcon: {
     fontSize: 24,
-    color: '#343a40',
+    color: '#000000', // Texto negro
     marginRight: 16,
   },
   mobileHeaderTop: {
@@ -592,7 +604,7 @@ export default StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#4dabf7',
+    backgroundColor: '#00cc6a', // Verde Uber Eats
     justifyContent: 'center',
     alignItems: 'center',
     ...Platform.select({
@@ -606,58 +618,53 @@ export default StyleSheet.create({
         elevation: 8,
       },
       web: {
-        boxShadow: '0 4px 12px rgba(77, 171, 247, 0.3)',
+        boxShadow: '0 4px 12px rgba(0, 204, 106, 0.3)', // Sombra verde
       }
     }),
     zIndex: 100,
   },
   floatingSidebarButtonText: {
     fontSize: 28,
-    color: '#fff',
+    color: '#ffffff', // Texto blanco
     fontWeight: '600',
   },
   logo: {
-  width: 200,
-  height: 200,
-  resizeMode: 'contain',
-  marginBottom: 20,
-  alignSelf: 'center',
-},
-mobileLogo: {
-  width: 100,
-  height: 40,
-  resizeMode: 'contain',
-},
-sidebarLogo: {
-  width: 150,
-  height: 60,
-  resizeMode: 'contain',
-  alignSelf: 'center',
-  marginBottom: 20,
-},
-// Agrega estos estilos a tu archivo ClienteStyle.js
-
-logoContainer: {
-  width: '100%',
-  alignItems: 'center',
-  justifyContent: 'center',
-  paddingVertical: 20,
-  marginTop: 20,
-  backgroundColor: '#fff',
-},
-
-mobileLogo: {
-  width: 150,
-  height: 150,
-  resizeMode: 'contain',
-},
-
-menuButton: {
-  padding: 10,
-},
-
-menuButtonText: {
-  fontSize: 24,
-},
-
+    width: 200,
+    height: 200,
+    resizeMode: 'contain',
+    marginBottom: 20,
+    alignSelf: 'center',
+  },
+  mobileLogo: {
+    width: 100,
+    height: 40,
+    resizeMode: 'contain',
+  },
+  sidebarLogo: {
+    width: 150,
+    height: 60,
+    resizeMode: 'contain',
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  logoContainer: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+    marginTop: 20,
+    backgroundColor: '#ffffff', // Fondo negro para contenedor del logo en sidebar
+  },
+  mobileLogo: {
+    width: 150,
+    height: 150,
+    resizeMode: 'contain',
+  },
+  menuButton: {
+    padding: 10,
+  },
+  menuButtonText: {
+    fontSize: 24,
+    color: '#ffffff', // Texto blanco para botones en sidebar negro
+  },
 });

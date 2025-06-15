@@ -32,7 +32,6 @@ const getBaseUrl = () => {
 
 const BASE_URL = getBaseUrl();
 
-
 const { width, height } = Dimensions.get('window');
 const isMobile = width < 768;
 const isTablet = width >= 768 && width < 1024;
@@ -48,7 +47,7 @@ export default function RestauranteScreen({ restaurante, onLogout }) {
   const [modalPedidoVisible, setModalPedidoVisible] = useState(false);
   const [selectedPedido, setSelectedPedido] = useState(null);
   const [currentCombo, setCurrentCombo] = useState(null);
-  const [sidebarVisible, setSidebarVisible] = useState(!isMobile);
+  const [sidebarVisible, setSidebarVisible] = useState(isWeb);
   
   const [comboNum, setComboNum] = useState('');
   const [descripcionCombo, setDescripcionCombo] = useState('');
@@ -187,10 +186,11 @@ export default function RestauranteScreen({ restaurante, onLogout }) {
         precio: parseFloat(precioCombo),
         restauranteId: restaurante.cedula
       };
-      console.log(currentCombo);
+      
       if (currentCombo) {
-        comboData.id = currentCombo.id; // Incluir el ID existente
+        comboData.id = currentCombo.id;
       }
+      
       const url = currentCombo 
         ? `${BASE_URL}/combos/${currentCombo.id}`
         : `${BASE_URL}/combos`;
@@ -204,6 +204,7 @@ export default function RestauranteScreen({ restaurante, onLogout }) {
         },
         body: JSON.stringify(comboData)
       });
+      
       if (!response.ok) throw new Error('Error al guardar combo');
       
       Alert.alert('Éxito', currentCombo ? 'Combo actualizado' : 'Combo creado');
@@ -257,54 +258,58 @@ export default function RestauranteScreen({ restaurante, onLogout }) {
   };
 
   const renderPedidoItem = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.pedidoCard}
-      onPress={() => {
-        setSelectedPedido(item);
-        setModalPedidoVisible(true);
-      }}
-    >
-      <Text style={styles.pedidoTitle}>Pedido #{item.id}</Text>
-      <Text style={styles.pedidoInfo}>Cliente: {item.clienteId}</Text>
-      <Text style={styles.pedidoInfo}>Repartidor: {item.repartidorId}</Text>
-      <Text style={styles.pedidoInfo}>Total: {formatCurrency(item.total)}</Text>
-      <Text style={[
-        styles.pedidoEstado,
-        item.estado === 'EN_PREPARACION' ? styles.estadoPreparacion :
-        item.estado === 'EN_CAMINO' ? styles.estadoCamino :
-        styles.estadoEntregado
-      ]}>
-        {item.estado.replace('_', ' ')}
-      </Text>
-    </TouchableOpacity>
+    <View style={isWeb ? styles.webPedidoCard : null}>
+      <TouchableOpacity 
+        style={[styles.pedidoCard, isWeb && styles.webPedidoCardInner]}
+        onPress={() => {
+          setSelectedPedido(item);
+          setModalPedidoVisible(true);
+        }}
+      >
+        <Text style={styles.pedidoTitle}>Pedido #{item.id}</Text>
+        <Text style={styles.pedidoInfo}>Cliente: {item.clienteId}</Text>
+        <Text style={styles.pedidoInfo}>Repartidor: {item.repartidorId}</Text>
+        <Text style={styles.pedidoInfo}>Total: {formatCurrency(item.total)}</Text>
+        <Text style={[
+          styles.pedidoEstado,
+          item.estado === 'EN_PREPARACION' ? styles.estadoPreparacion :
+          item.estado === 'EN_CAMINO' ? styles.estadoCamino :
+          styles.estadoEntregado
+        ]}>
+          {item.estado.replace('_', ' ')}
+        </Text>
+      </TouchableOpacity>
+    </View>
   );
 
   const renderComboItem = ({ item }) => (
-    <View style={styles.comboCard}>
-      <Text style={styles.comboTitle}>Combo #{item.comboNum}</Text>
-      <Text style={styles.comboDescription}>{item.descripcion}</Text>
-      <Text style={styles.comboPrice}>{formatCurrency(item.precio)}</Text>
-      
-      <View style={styles.comboButtons}>
-        <TouchableOpacity 
-          style={[styles.comboButton, styles.editButton]}
-          onPress={() => {
-            setCurrentCombo(item);
-            setComboNum(item.comboNum.toString());
-            setDescripcionCombo(item.descripcion);
-            setPrecioCombo(item.precio.toString());
-            setModalComboVisible(true);
-          }}
-        >
-          <Text style={styles.comboButtonText}>Editar</Text>
-        </TouchableOpacity>
+    <View style={isWeb ? styles.webComboCard : null}>
+      <View style={[styles.comboCard, isWeb && styles.webComboCardInner]}>
+        <Text style={styles.comboTitle}>Combo #{item.comboNum}</Text>
+        <Text style={styles.comboDescription}>{item.descripcion}</Text>
+        <Text style={styles.comboPrice}>{formatCurrency(item.precio)}</Text>
         
-        <TouchableOpacity 
-          style={[styles.comboButton, styles.deleteButton]}
-          onPress={() => handleDeleteCombo(item.id)}
-        >
-          <Text style={styles.comboButtonText}>Eliminar</Text>
-        </TouchableOpacity>
+        <View style={styles.comboButtons}>
+          <TouchableOpacity 
+            style={[styles.comboButton, styles.editButton]}
+            onPress={() => {
+              setCurrentCombo(item);
+              setComboNum(item.comboNum.toString());
+              setDescripcionCombo(item.descripcion);
+              setPrecioCombo(item.precio.toString());
+              setModalComboVisible(true);
+            }}
+          >
+            <Text style={styles.comboButtonText}>Editar</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.comboButton, styles.deleteButton]}
+            onPress={() => handleDeleteCombo(item.id)}
+          >
+            <Text style={styles.comboButtonText}>Eliminar</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -326,47 +331,68 @@ export default function RestauranteScreen({ restaurante, onLogout }) {
         data = pedidosEntregados;
         emptyText = 'No hay pedidos entregados';
         break;
+      // En la función renderTabContent, modifica el caso 'combos':
       case 'combos':
         return (
-          <View style={styles.combosContainer}>
-            <TouchableOpacity 
-              style={styles.addComboButton}
-              onPress={() => setModalComboVisible(true)}
-            >
-              <Text style={styles.addComboButtonText}>+ Nuevo Combo</Text>
-            </TouchableOpacity>
-            
+          <View style={[styles.combosContainer, styles.listPadding]}>
             <FlatList
               data={combos}
               renderItem={renderComboItem}
               keyExtractor={item => item.id.toString()}
-              contentContainerStyle={styles.listContainer}
+              contentContainerStyle={[
+                styles.listContentContainer,
+                { paddingBottom: width >= 768 ? 80 : 100 } // Más espacio en mobile
+              ]}
               ListEmptyComponent={
                 <Text style={styles.emptyText}>No hay combos registrados</Text>
               }
               refreshControl={
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
               }
+              numColumns={width >= 768 ? 2 : 1}
+            />
+            
+            
+          </View>
+        );
+
+      // Para las otras pestañas, asegúrate de que tengan el padding:
+      default:
+        return (
+          <View style={[styles.pedidosContainer, styles.listPadding]}>
+            <FlatList
+              data={data}
+              renderItem={renderPedidoItem}
+              keyExtractor={item => item.id.toString()}
+              contentContainerStyle={styles.listContentContainer}
+              ListEmptyComponent={
+                <Text style={styles.emptyText}>{emptyText}</Text>
+              }
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
+              numColumns={isWeb ? 2 : 1}
             />
           </View>
         );
-      default:
-        return null;
     }
 
     return (
-      <FlatList
-        data={data}
-        renderItem={renderPedidoItem}
-        keyExtractor={item => item.id.toString()}
-        contentContainerStyle={styles.listContainer}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>{emptyText}</Text>
-        }
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      />
+      <View style={isWeb ? styles.webPedidoGrid : null}>
+        <FlatList
+          data={data}
+          renderItem={renderPedidoItem}
+          keyExtractor={item => item.id.toString()}
+          contentContainerStyle={styles.listContainer}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>{emptyText}</Text>
+          }
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          numColumns={isWeb ? 2 : 1}
+        />
+      </View>
     );
   };
 
@@ -409,6 +435,7 @@ export default function RestauranteScreen({ restaurante, onLogout }) {
             <Image 
               source={eatsLogo} 
               style={styles.sidebarLogo}
+              resizeMode="contain"
             />
             <Text style={styles.userName}>{restaurante.nombre}</Text>
             <Text style={styles.userInfo}>Cédula: {restaurante.cedulaJuridica}</Text>
@@ -471,30 +498,30 @@ export default function RestauranteScreen({ restaurante, onLogout }) {
         </Animated.View>
 
         {/* Contenido principal */}
-        <View style={[
-          styles.content, 
-          isMobile && styles.mobileContent,
-          isWeb && styles.webContent
-        ]}>
-          {loading && !modalPedidoVisible && !modalComboVisible ? (
-            <ActivityIndicator size="large" color="#0000ff" />
-          ) : (
-            <>
-              {renderTabContent()}
-              {/* Logo centrado debajo del contenido solo en mobile */}
-              {isMobile && (
-                <View style={styles.logoContainer}>
-                  <Image 
-                    source={eatsLogo} 
-                    style={styles.mobileLogo}
-                  />
-                </View>
-              )}
-            </>
-          )}
-        </View>
+      <View style={[
+        styles.content, 
+        isMobile && styles.mobileContent,
+        isWeb && styles.webContent
+      ]}>
+        {loading && !modalPedidoVisible && !modalComboVisible ? (
+          <ActivityIndicator size="large" color="#0000ff" />
+        ) : (
+          <>
+            {renderTabContent()}
+            {/* Logo centrado debajo del contenido solo en mobile */}
+            {isMobile && (
+              <View style={styles.logoContainer}>
+                <Image 
+                  source={eatsLogo} 
+                  style={styles.mobileLogo}
+                />
+              </View>
+            )}
+          </>
+        )}
+      </View>
 
-        {/* Botón flotante para abrir sidebar en móvil - POSICIÓN CORREGIDA (esquina inferior derecha) */}
+        {/* Botón flotante para abrir sidebar en móvil */}
         {isMobile && !sidebarVisible && (
           <TouchableOpacity 
             style={styles.sidebarToggleButton}
@@ -503,6 +530,19 @@ export default function RestauranteScreen({ restaurante, onLogout }) {
             <Text style={styles.sidebarToggleButtonText}>☰</Text>
           </TouchableOpacity>
         )}
+        {/* Botón flotante para agregar combo */}
+            {activeTab === 'combos' && (
+              <TouchableOpacity 
+                style={[
+                  styles.addComboButton,
+                  width >= 768 ? styles.addComboButtonLarge : styles.addComboButtonSmall,
+                  width < 768 && { bottom: 80 } // Ajuste para mobile
+                ]}
+                onPress={() => setModalComboVisible(true)}
+              >
+                <Text style={styles.addComboButtonText}>+</Text>
+              </TouchableOpacity>
+            )}
         
         {/* Modal de detalle de pedido */}
         <Modal
