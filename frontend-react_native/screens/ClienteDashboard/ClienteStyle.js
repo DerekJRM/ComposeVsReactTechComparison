@@ -667,4 +667,35 @@ export default StyleSheet.create({
     fontSize: 24,
     color: '#ffffff', // Texto blanco para botones en sidebar negro
   },
+
+  // Agrega estos estilos a tu archivo ClienteStyle.js
+ratingContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginVertical: 20,
+},
+star: {
+  fontSize: 32,
+  marginHorizontal: 5,
+},
+starFilled: {
+  color: '#FFD700', // Amarillo oro para estrellas seleccionadas
+},
+starEmpty: {
+  color: '#CCCCCC', // Gris para estrellas no seleccionadas
+},
+ratingText: {
+  marginLeft: 15,
+  fontSize: 16,
+  color: '#333',
+  fontWeight: 'bold',
+},
+calificacionTitle: {
+  fontSize: 18,
+  fontWeight: 'bold',
+  textAlign: 'center',
+  marginBottom: 10,
+  color: '#333',
+},
 });

@@ -59,7 +59,7 @@ export default function ClienteScreen({ cliente = {}, onLogout }) {
   const [repartidorId, setRepartidorId] = useState('');
   const [quejasCliente, setQuejasCliente] = useState([]);
   const [sidebarVisible, setSidebarVisible] = useState(false);
-  
+  const [calificacion, setCalificacion] = useState(3); // Valor por defecto 3
   // Animaciones para el sidebar móvil
   const sidebarAnimation = useRef(new Animated.Value(-300)).current;
   const overlayAnimation = useRef(new Animated.Value(0)).current;
@@ -142,6 +142,81 @@ export default function ClienteScreen({ cliente = {}, onLogout }) {
     setDescripcionQueja('');
     setRepartidorId(pedido.repartidorId || '');
     setQuejasModalVisible(true);
+  };
+
+  const enviarCalificacion = async () => {
+    if (!descripcionQueja) {
+      Alert.alert('Error', 'Por favor ingresa un comentario sobre tu experiencia');
+      return;
+    }
+
+    // Validar que la calificación esté entre 1 y 5
+    if (calificacion < 1 || calificacion > 5) {
+      Alert.alert('Error', 'La calificación debe ser entre 1 (Malo) y 5 (Excelente)');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      const quejaData = {
+        repartidorId: repartidorId,
+        clienteId: safeCliente.cedula,
+        pedidoId: selectedPedido?.id,
+        descripcion: `Calificación: ${calificacion}/5 - ${descripcionQueja}`
+      };
+
+      const response = await fetch(`${BASE_URL}/api/quejas`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(quejaData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.mensaje || 'Error al enviar calificación');
+      }
+
+      Alert.alert('Gracias', 'Tu calificación ha sido registrada correctamente');
+      setQuejasModalVisible(false);
+      fetchQuejasCliente();
+    } catch (error) {
+      console.error('Error enviando calificación:', error);
+      Alert.alert('Error', error.message || 'No se pudo enviar la calificación');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Componente de estrellas para calificación
+  const RatingStars = ({ rating, onRatingChange }) => {
+    return (
+      <View style={styles.ratingContainer}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <TouchableOpacity 
+            key={star} 
+            onPress={() => onRatingChange(star)}
+            activeOpacity={0.7}
+          >
+            <Text style={[
+              styles.star, 
+              star <= rating ? styles.starFilled : styles.starEmpty
+            ]}>
+              {star <= rating ? '★' : '☆'}
+            </Text>
+          </TouchableOpacity>
+        ))}
+        <Text style={styles.ratingText}>
+          {rating === 1 && 'Malo'}
+          {rating === 2 && 'Regular'}
+          {rating === 3 && 'Bueno'}
+          {rating === 4 && 'Muy Bueno'}
+          {rating === 5 && 'Excelente'}
+        </Text>
+      </View>
+    );
   };
 
   const enviarQueja = async () => {
@@ -384,25 +459,31 @@ export default function ClienteScreen({ cliente = {}, onLogout }) {
   );
 
   const renderPedidoItem = ({ item }) => (
-    <View style={[
-      styles.pedidoCard,
-      isMobile ? styles.pedidoCardMobile : styles.pedidoCardDesktop
-    ]}>
-      <Text style={styles.pedidoTitle}>Pedido #{item.id}</Text>
-      <Text style={styles.pedidoInfo}>Estado: {item.estado}</Text>
-      <Text style={styles.pedidoInfo}>Fecha: {new Date(item.fechaPedido).toLocaleString()}</Text>
-      <Text style={styles.pedidoInfo}>Total: {formatCurrency(item.total)}</Text>
-      
-      {item.estado === 'ENTREGADO' && (
-        <TouchableOpacity 
-          style={styles.quejaButton}
-          onPress={() => abrirModalQueja(item)}
-        >
-          <Text style={styles.quejaButtonText}>Calificar/Quejar</Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
+  <View style={[
+    styles.pedidoCard,
+    isMobile ? styles.pedidoCardMobile : styles.pedidoCardDesktop
+  ]}>
+    <Text style={styles.pedidoTitle}>Pedido #{item.id}</Text>
+    <Text style={styles.pedidoInfo}>Estado: {item.estado}</Text>
+    <Text style={styles.pedidoInfo}>Fecha: {new Date(item.fechaPedido).toLocaleString()}</Text>
+    <Text style={styles.pedidoInfo}>Total: {formatCurrency(item.total)}</Text>
+    
+    {item.estado === 'ENTREGADO' && (
+      <TouchableOpacity 
+        style={styles.quejaButton}
+        onPress={() => {
+          setSelectedPedido(item);
+          setCalificacion(3); // Resetear a valor medio
+          setDescripcionQueja('');
+          setRepartidorId(item.repartidorId || '');
+          setQuejasModalVisible(true);
+        }}
+      >
+        <Text style={styles.quejaButtonText}>Calificar Pedido</Text>
+      </TouchableOpacity>
+    )}
+  </View>
+);
 
   return (
     <View style={isMobile ? styles.mobileContainer : styles.desktopContainer}>
@@ -693,67 +774,74 @@ export default function ClienteScreen({ cliente = {}, onLogout }) {
 
       {/* Modal para quejas */}
       <Modal
-        animationType="slide"
-        transparent={false}
-        visible={quejasModalVisible}
-        onRequestClose={() => setQuejasModalVisible(false)}
-      >
-        <View style={[
-          styles.modalContainer,
-          isMobile ? styles.modalContainerMobile : styles.modalContainerDesktop
-        ]}>
-          <View style={styles.modalHeader}>
-            <TouchableOpacity 
-              style={styles.backButton}
-              onPress={() => setQuejasModalVisible(false)}
-            >
-              <Text style={styles.backButtonText}>←</Text>
-            </TouchableOpacity>
-            <Text style={styles.modalTitle}>Calificar Pedido #{selectedPedido?.id}</Text>
+    animationType="slide"
+    transparent={false}
+    visible={quejasModalVisible}
+    onRequestClose={() => setQuejasModalVisible(false)}
+  >
+    <View style={[
+      styles.modalContainer,
+      isMobile ? styles.modalContainerMobile : styles.modalContainerDesktop
+    ]}>
+      <View style={styles.modalHeader}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => setQuejasModalVisible(false)}
+        >
+          <Text style={styles.backButtonText}>←</Text>
+        </TouchableOpacity>
+        <Text style={styles.modalTitle}>Calificar Pedido #{selectedPedido?.id}</Text>
+      </View>
+
+      <View style={[
+        styles.quejaFormContainer,
+        isMobile ? styles.quejaFormContainerMobile : styles.quejaFormContainerDesktop
+      ]}>
+        <Text style={styles.calificacionTitle}>¿Cómo calificarías este pedido?</Text>
+        
+        <RatingStars 
+          rating={calificacion} 
+          onRatingChange={setCalificacion} 
+        />
+
+        {selectedPedido?.repartidorId && (
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Repartidor:</Text>
+            <TextInput
+              style={styles.input}
+              value={repartidorId}
+              onChangeText={setRepartidorId}
+              editable={false}
+            />
           </View>
+        )}
 
-          <View style={[
-            styles.quejaFormContainer,
-            isMobile ? styles.quejaFormContainerMobile : styles.quejaFormContainerDesktop
-          ]}>
-            {selectedPedido?.repartidorId && (
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Repartidor ID:</Text>
-                <TextInput
-                  style={styles.input}
-                  value={repartidorId}
-                  onChangeText={setRepartidorId}
-                  editable={false}
-                />
-              </View>
-            )}
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Descripción de la queja:</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                multiline
-                numberOfLines={4}
-                value={descripcionQueja}
-                onChangeText={setDescripcionQueja}
-                placeholder="Describe tu experiencia con el pedido..."
-              />
-            </View>
-
-            <TouchableOpacity 
-              style={[styles.modalButton, styles.confirmButton]}
-              onPress={enviarQueja}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.modalButtonText}>Enviar Queja</Text>
-              )}
-            </TouchableOpacity>
-          </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>Comentarios:</Text>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            multiline
+            numberOfLines={4}
+            value={descripcionQueja}
+            onChangeText={setDescripcionQueja}
+            placeholder="Describe tu experiencia con el pedido (opcional)..."
+          />
         </View>
-      </Modal>
+
+        <TouchableOpacity 
+          style={[styles.modalButton, styles.confirmButton]}
+          onPress={enviarCalificacion}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.modalButtonText}>Enviar Calificación</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    </View>
+  </Modal>
     </View>
   );
 }
