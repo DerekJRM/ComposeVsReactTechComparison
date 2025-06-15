@@ -7,6 +7,7 @@ export default StyleSheet.create({
     backgroundColor: '#ffffff', // Fondo blanco
   },
   mobileContainer: {
+    marginTop: 15,
     flex: 1,
     backgroundColor: '#ffffff', // Fondo blanco
   },
@@ -127,6 +128,7 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffffff', // Fondo blanco
     padding: 16,
+
   },
 
   // Sidebar común (mobile y desktop) - en negro
