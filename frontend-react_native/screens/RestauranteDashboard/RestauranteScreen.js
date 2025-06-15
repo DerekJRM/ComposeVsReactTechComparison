@@ -185,9 +185,12 @@ export default function RestauranteScreen({ restaurante, onLogout }) {
         comboNum: parseInt(comboNum),
         descripcion: descripcionCombo,
         precio: parseFloat(precioCombo),
-        restauranteId: restaurante.cedulaJuridica
+        restauranteId: restaurante.cedula
       };
-
+      console.log(currentCombo);
+      if (currentCombo) {
+        comboData.id = currentCombo.id; // Incluir el ID existente
+      }
       const url = currentCombo 
         ? `${BASE_URL}/combos/${currentCombo.id}`
         : `${BASE_URL}/combos`;
@@ -201,7 +204,6 @@ export default function RestauranteScreen({ restaurante, onLogout }) {
         },
         body: JSON.stringify(comboData)
       });
-
       if (!response.ok) throw new Error('Error al guardar combo');
       
       Alert.alert('Éxito', currentCombo ? 'Combo actualizado' : 'Combo creado');
