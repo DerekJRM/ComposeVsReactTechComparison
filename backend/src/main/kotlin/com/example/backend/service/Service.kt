@@ -185,6 +185,10 @@ class Service(
         return quejaRepository.findByRepartidorId(repartidorId)
     }
 
+    override fun getQuejasByPedido(pedidoId: Long): Queja {
+        return quejaRepository.findByPedidoId(pedidoId)
+    }
+
     // ========== FACTURA ==========
     override fun getFacturaById(id: Long): Factura? {
         return facturaRepository.findById(id).orElse(null)

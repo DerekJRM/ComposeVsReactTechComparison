@@ -33,7 +33,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -48,9 +47,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.frontend_jetpack_compose.data.LoginViewModel
 import com.example.frontend_jetpack_compose.data.model.Cliente
 import com.example.frontend_jetpack_compose.data.model.Combo
 import com.example.frontend_jetpack_compose.data.model.Pedido
@@ -61,7 +58,7 @@ import com.example.frontend_jetpack_compose.data.repository.RepartidorRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.time.Instant
+import java.time.LocalDate
 
 data class CarritoItem(
     val combo: Combo,
@@ -84,8 +81,8 @@ fun CombosScreen(
 ) {
     var selectedCombo by remember { mutableStateOf<Combo?>(null) }
     var cantidad by remember { mutableIntStateOf(1) }
-    var distanciaKm by remember { mutableDoubleStateOf(0.0) }
-    var esFeriado by remember { mutableStateOf(false) }
+    var distanciaKm by remember { mutableDoubleStateOf((5..30).random() / 10.0) } // entre 0.5 y 3.0 km
+    var esFeriado by remember { mutableStateOf(listOf(true, false).random()) }
     var cantidadEditar by remember { mutableIntStateOf(1) }
     val precioUnitario = selectedCombo?.precio ?: 0.0
     val subtotal = cantidad * precioUnitario
@@ -138,7 +135,7 @@ fun CombosScreen(
                 .fillMaxWidth()
                 .padding(bottom = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            verticalAlignment = CenterVertically
         ) {
             Text(
                 text = "Combos",
@@ -172,8 +169,6 @@ fun CombosScreen(
                                 it.clickable {
                                     selectedCombo = combo
                                     cantidad = 1
-                                    distanciaKm = (5..30).random() / 10.0 // entre 0.5 y 3.0 km
-                                    esFeriado = listOf(true, false).random()
                                 }
                             else it
                         },
@@ -266,19 +261,19 @@ fun CombosScreen(
             Button(
                 onClick = {
                     scope.launch {
-                        withContext(Dispatchers.IO) {
-                            val repartidor = RepartidorRepository.getAllRepartidores().find { it -> it.estado == "DISPONIBLE" }
-                            if (repartidor == null) {
-                                Toast.makeText(context, "No hay repartidores disponibles", Toast.LENGTH_SHORT).show()
-                                return@withContext
-                            }
+                        val repartidor = RepartidorRepository.getAllRepartidores().find { it -> it.estado == "DISPONIBLE" }
+                        if (repartidor == null) {
+                            Toast.makeText(context, "No hay repartidores disponibles", Toast.LENGTH_SHORT).show()
+                            return@launch
+                        }
+                        val pedidoResult = withContext(Dispatchers.IO) {
                             val nuevoPedido = PedidoRepository.createPedido(
                                 Pedido(
                                     clienteId = cliente?.cedula ?: "",
                                     restauranteId = restauranteId,
                                     repartidorId = repartidor.cedula,
                                     estado = "EN_PREPARACION",
-                                    fechaPedido = Instant.now(),
+                                    fechaPedido = LocalDate.now(),
                                     subtotal = totalFinal,
                                     costoTransporte = carrito.sumOf { it.costoTransporte },
                                     iva = carrito.sumOf { it.iva },
@@ -297,11 +292,26 @@ fun CombosScreen(
                                     newItem = true
                                 ))
                             }
+
+                            nuevoPedido
+                        }
+                        withContext(Dispatchers.Main) {
+                            if (pedidoResult != null) {
+                                Toast.makeText(context, "Pedido realizado con éxito", Toast.LENGTH_SHORT).show()
+                                carrito = emptyList()
+                                val repartidor = RepartidorRepository.getRepartidorById(pedidoResult.repartidorId)
+                                repartidor?.estado = "OCUPADO"
+                                repartidor?.distanciaPedidoKm = distanciaKm
+                                repartidor?.kmRecorridosDiarios += distanciaKm
+                                RepartidorRepository.updateRepartidor(repartidor!!)
+                                navController.navigate("pedidos/$rol") {
+                                    popUpTo("combos/${restauranteId}/${rol}") { inclusive = true }
+                                }
+                            } else {
+                                Toast.makeText(context, "Error al realizar el pedido", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     }
-
-                    Toast.makeText(context, "Pedido realizado con éxito", Toast.LENGTH_SHORT).show()
-                    carrito = emptyList()
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp)
             ) {

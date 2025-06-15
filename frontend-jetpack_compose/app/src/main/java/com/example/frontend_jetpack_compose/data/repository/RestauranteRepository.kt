@@ -9,10 +9,10 @@ object RestauranteRepository {
     private const val BASE_URL = "http://10.0.2.2:8080/api"
     private val gson = Gson()
 
-    suspend fun getRestauranteById(cedulaJuridica: String): Restaurante? {
+    suspend fun getRestauranteById(cedulaJuridica: String): Restaurante? = withContext(Dispatchers.IO) {
         val url = "$BASE_URL/restaurantes/$cedulaJuridica"
         val connection = java.net.URL(url).openConnection() as java.net.HttpURLConnection
-        return try {
+        return@withContext try {
             connection.requestMethod = "GET"
             connection.connect()
 

@@ -5,9 +5,7 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import org.hibernate.annotations.ColumnDefault
 import org.hibernate.annotations.Formula
-import java.math.BigDecimal
-import java.time.Instant
-import java.time.LocalDateTime
+import java.time.LocalDate
 
 @Entity
 @Table(name = "PEDIDOS", schema = "PROYECTO_MOVILES")
@@ -35,10 +33,10 @@ open class Pedido {
 
     @ColumnDefault("SYSTIMESTAMP")
     @Column(name = "FECHA_PEDIDO")
-    open var fechaPedido: LocalDateTime? = null
+    open var fechaPedido: LocalDate? = null
 
     @Column(name = "FECHA_ENTREGA")
-    open var fechaEntrega: LocalDateTime? = null
+    open var fechaEntrega: LocalDate? = null
 
     @NotNull
     @Column(name = "SUBTOTAL", nullable = false)

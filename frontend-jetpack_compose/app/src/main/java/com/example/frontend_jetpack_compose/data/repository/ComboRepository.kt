@@ -91,4 +91,22 @@ object ComboRepository {
             connection.disconnect()
         }
     }
+
+    suspend fun getComboById(id: Long): Combo? = withContext(Dispatchers.IO) {
+        val url = URL("$BASE_URL/combos/$id")
+        val connection = url.openConnection() as HttpURLConnection
+        return@withContext try {
+            connection.requestMethod = "GET"
+            connection.connect()
+
+            if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                val response = connection.inputStream.bufferedReader().use { it.readText() }
+                gson.fromJson(response, Combo::class.java)
+            } else {
+                null
+            }
+        } finally {
+            connection.disconnect()
+        }
+    }
 }

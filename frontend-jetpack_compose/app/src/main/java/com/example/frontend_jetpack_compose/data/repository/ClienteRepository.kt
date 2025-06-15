@@ -12,10 +12,10 @@ object ClienteRepository {
     private const val BASE_URL = "http://10.0.2.2:8080/api"
     private val gson = Gson()
 
-    suspend fun getClienteById(cedula: String): Cliente? {
+    suspend fun getClienteById(cedula: String): Cliente? = withContext(Dispatchers.IO) {
         val url = URL("$BASE_URL/clientes/$cedula")
         val connection = url.openConnection() as HttpURLConnection
-        return try {
+        return@withContext try {
             connection.requestMethod = "GET"
             connection.connect()
 

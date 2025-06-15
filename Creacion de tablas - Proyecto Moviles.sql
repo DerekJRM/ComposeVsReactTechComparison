@@ -157,3 +157,11 @@ DROP CONSTRAINT SYS_C0019230;
 
 ALTER TABLE PROYECTO_MOVILES.combos
 MODIFY combo_num NUMBER;
+
+-- agregar calificacion al pedido
+ALTER TABLE PROYECTO_MOVILES.pedidos
+ADD calificacion NUMBER DEFAULT 0;
+
+--agregarle a la queja el id del pedido
+ALTER TABLE PROYECTO_MOVILES.quejas
+ADD pedido_id NUMBER REFERENCES PROYECTO_MOVILES.pedidos(pedido_id);

@@ -27,8 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.frontend_jetpack_compose.ui.navigation.AppNavGraph
 import com.example.frontend_jetpack_compose.data.LoginViewModel
+import com.example.frontend_jetpack_compose.ui.navigation.AppNavGraph
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -75,7 +75,26 @@ fun MainScaffold(navController: NavHostController) {
                             selected = false,
                             onClick = {
                                 scope.launch { drawerState.close() }
-                                navController.navigate("restaurantes")
+                                val rolStr = rol.toString()
+                                navController.navigate("restaurantes/$rolStr")
+                            }
+                        )
+                        NavigationDrawerItem(
+                            label = { Text("Mis Pedidos") },
+                            selected = false,
+                            onClick = {
+                                scope.launch { drawerState.close() }
+                                navController.navigate("pedidos/${rol.toString()}")
+                            }
+                        )
+                    }
+                    if (rol == "REPARTIDOR") {
+                        NavigationDrawerItem(
+                            label = { Text("Pedidos Asignados") },
+                            selected = false,
+                            onClick = {
+                                scope.launch { drawerState.close() }
+                                navController.navigate("pedidos/${rol.toString()}")
                             }
                         )
                     }

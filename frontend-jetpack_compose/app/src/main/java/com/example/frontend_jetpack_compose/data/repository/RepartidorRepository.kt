@@ -36,10 +36,10 @@ object RepartidorRepository {
         }
     }
 
-    suspend fun getRepartidorById(cedula: String): Repartidor? {
-        val url = URL("$BASE_URL/getRepartidorById/$cedula")
+    suspend fun getRepartidorById(cedula: String): Repartidor? = withContext(Dispatchers.IO) {
+        val url = URL("$BASE_URL/repartidores/$cedula")
         val connection = url.openConnection() as HttpURLConnection
-        return try {
+        return@withContext try {
             connection.requestMethod = "GET"
             connection.connect()
 

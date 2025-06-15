@@ -28,9 +28,9 @@ fun AppNavGraph(navController: NavHostController) {
         navController = navController,
         startDestination = if (isLoggedIn) {
             when (rol) {
-                "CLIENTE" -> "restaurantes"
+                "CLIENTE" -> "restaurantes/${rol.toString()}"
                 "RESTAURANTE" -> "combos/${restaurante?.cedulaJuridica ?: ""}/${rol.toString()}"
-                else -> "perfil"
+                else -> "pedidos/${rol.toString()}"
             }
         } else {
             "login"
@@ -75,30 +75,45 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
 
-        composable("restaurantes") {
+        composable(
+            "restaurantes/{rol}",
+            arguments = listOf(navArgument("rol") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val rol = backStackEntry.arguments?.getString("rol") ?: ""
             RestaurantesScreen(
                 navController = navController,
-                rol = rol.toString()
+                rol = rol
             )
         }
-//
-//            composable("lista_restaurantes") {
-//                ListaRestaurantesScreen(navController = navController)
-//            }
-//
-//            composable("detalle_restaurante/{restauranteId}") { backStackEntry ->
-//                val restauranteId = backStackEntry.arguments?.getString("restauranteId") ?: ""
-//                DetalleRestauranteScreen(navController = navController, restauranteId = restauranteId)
-//            }
-//
-//            composable("carrito") { CarritoScreen(navController = navController) }
-//
-//            composable("seguimiento/{pedidoId}") { backStackEntry ->
-//                val pedidoId = backStackEntry.arguments?.getString("pedidoId")?.toIntOrNull() ?: 0
-//                SeguimientoPedidoScreen(navController = navController, pedidoId = pedidoId)
-//            }
-//
-//            composable("historial") { HistorialPedidosScreen(navController = navController) }
+
+        composable(
+            "pedidos/{rol}",
+            arguments = listOf(navArgument("rol") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val rol = backStackEntry.arguments?.getString("rol") ?: ""
+            PedidosScreen(
+                navController = navController,
+                cliente = cliente,
+                repartidor = repartidor,
+                rol = rol
+            )
+        }
+
+        composable(
+            "detalle_pedido/{pedidoId}/{rol}",
+            arguments = listOf(
+                navArgument("pedidoId") { type = NavType.LongType },
+                navArgument("rol") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val pedidoId = backStackEntry.arguments?.getLong("pedidoId") ?: 0L
+            val rol = backStackEntry.arguments?.getString("rol") ?: ""
+            DetallePedidoScreen(
+                navController = navController,
+                pedidoId = pedidoId,
+                rol = rol.toString(),
+            )
+        }
 
     }
 }

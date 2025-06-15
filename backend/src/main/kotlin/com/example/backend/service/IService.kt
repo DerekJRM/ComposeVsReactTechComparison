@@ -58,6 +58,7 @@ interface IService {
     fun getAllQuejas(): List<Queja>
     fun getQuejasByCliente(clienteId: String): List<Queja>
     fun getQuejasByRepartidor(repartidorId: String): List<Queja>
+    fun getQuejasByPedido(pedidoId: Long): Queja
 
     // ========== FACTURA ========== (solo lectura)
     fun getFacturaById(id: Long): Factura?

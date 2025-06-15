@@ -60,8 +60,9 @@ fun PerfilScreen(
                         EditableField("Email", it.email) { newValue -> repartidor.email = newValue }
                         EditableField("Número de Tarjeta", it.numTarjeta) { newValue -> repartidor.numTarjeta = newValue }
                         InfoText("Estado", it.estado)
+
                         Divider(modifier = Modifier.padding(vertical = 8.dp))
-                        InfoText("Distancia Pedido (km)", it.distanciaPedidoKm.toString())
+
                         InfoText("Km Recorridos Diarios", it.kmRecorridosDiarios.toString())
                         InfoText("Costo por Km Hábil", it.costoKmHabil.toString())
                         InfoText("Costo por Km Feriado", it.costoKmFeriado.toString())
