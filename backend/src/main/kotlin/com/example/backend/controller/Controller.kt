@@ -403,6 +403,11 @@ class Controller(
         return ResponseEntity.ok(service.getQuejasByRepartidor(repartidorId))
     }
 
+    @GetMapping("/pedidos/{pedidoId}/quejas")
+    fun getQuejasByPedido(@PathVariable pedidoId: Long): ResponseEntity<Queja> {
+        return ResponseEntity.ok(service.getQuejasByPedido(pedidoId))
+    }
+
     // ========== FACTURA ==========
     @GetMapping("/facturas/{id}")
     fun getFacturaById(@PathVariable id: Long): ResponseEntity<Any> {

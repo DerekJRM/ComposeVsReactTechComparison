@@ -22,6 +22,10 @@ open class Queja {
     @Column(name = "CLIENTE_ID", nullable = false)
     open var clienteId: String? = null
 
+    @NotNull
+    @Column(name = "PEDIDO_ID", nullable = false)
+    open var pedidoId: Long? = null
+
     @Size(max = 4000)
     @NotNull
     @Column(name = "DESCRIPCION", nullable = false, length = 4000)

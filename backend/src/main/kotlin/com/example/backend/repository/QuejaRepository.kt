@@ -10,4 +10,6 @@ interface QuejaRepository: JpaRepository<Queja, Long> {
 
     @Query("SELECT q FROM Queja q ORDER BY q.fechaQueja DESC")
     fun findAllOrderByFechaDesc(): List<Queja>
+
+    fun findByPedidoId(pedidoId: Long): Queja
 }

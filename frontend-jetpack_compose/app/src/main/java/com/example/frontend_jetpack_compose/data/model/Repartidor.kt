@@ -2,16 +2,16 @@ package com.example.frontend_jetpack_compose.data.model
 
 data class Repartidor(
     val cedula: String,
-    val nombre: String,
-    val email: String,
-    val direccion: String,
-    val telefono: String,
-    val numTarjeta: String,
-    val estado: String,
-    val distanciaPedidoKm: Double,
-    val kmRecorridosDiarios: Double,
+    var nombre: String,
+    var email: String,
+    var direccion: String,
+    var telefono: String,
+    var numTarjeta: String,
+    var estado: String,
+    var distanciaPedidoKm: Double,
+    var kmRecorridosDiarios: Double,
     val costoKmHabil: Double,
     val costoKmFeriado: Double,
-    val amonestaciones: Double,
+    var amonestaciones: Double,
     val newItem: Boolean = false
 )

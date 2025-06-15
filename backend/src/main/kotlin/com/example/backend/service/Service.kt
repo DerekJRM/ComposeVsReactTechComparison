@@ -23,7 +23,7 @@ class Service(
     }
 
     override fun saveUsuario(usuario: Usuario): Usuario {
-        return usuarioRepository.save(usuario)
+        return usuarioRepository.saveAndFlush(usuario)
     }
 
     override fun deleteUsuario(cedula: String) {
@@ -40,7 +40,7 @@ class Service(
     }
 
     override fun saveCliente(cliente: Cliente): Cliente {
-        return clienteRepository.save(cliente)
+        return clienteRepository.saveAndFlush(cliente)
     }
 
     override fun deleteCliente(cedula: String) {
@@ -57,7 +57,7 @@ class Service(
     }
 
     override fun saveRepartidor(repartidor: Repartidor): Repartidor {
-        return repartidorRepository.save(repartidor)
+        return repartidorRepository.saveAndFlush(repartidor)
     }
 
     override fun deleteRepartidor(cedula: String) {
@@ -74,7 +74,7 @@ class Service(
     }
 
     override fun saveRestaurante(restaurante: Restaurante): Restaurante {
-        return restauranteRepository.save(restaurante)
+        return restauranteRepository.saveAndFlush(restaurante)
     }
 
     override fun deleteRestaurante(cedula: String) {
@@ -91,7 +91,7 @@ class Service(
     }
 
     override fun saveCombo(combo: Combo): Combo {
-        return comboRepository.save(combo)
+        return comboRepository.saveAndFlush(combo)
     }
 
     override fun deleteCombo(id: Long) {
@@ -112,7 +112,7 @@ class Service(
     }
 
     override fun savePedido(pedido: Pedido): Pedido {
-        return pedidoRepository.save(pedido)
+        return pedidoRepository.saveAndFlush(pedido)
     }
 
     override fun deletePedido(id: Long) {
@@ -145,7 +145,7 @@ class Service(
     }
 
     override fun savePedidoCombo(pedidoCombo: PedidoCombo): PedidoCombo {
-        return pedidoComboRepository.save(pedidoCombo)
+        return pedidoComboRepository.saveAndFlush(pedidoCombo)
     }
 
     override fun deletePedidoCombo(pedidoId: Long, comboId: Long) {
@@ -166,7 +166,7 @@ class Service(
     }
 
     override fun saveQueja(queja: Queja): Queja {
-        return quejaRepository.save(queja)
+        return quejaRepository.saveAndFlush(queja)
     }
 
     override fun deleteQueja(id: Long) {
@@ -183,6 +183,10 @@ class Service(
 
     override fun getQuejasByRepartidor(repartidorId: String): List<Queja> {
         return quejaRepository.findByRepartidorId(repartidorId)
+    }
+
+    override fun getQuejasByPedido(pedidoId: Long): Queja {
+        return quejaRepository.findByPedidoId(pedidoId)
     }
 
     // ========== FACTURA ==========
