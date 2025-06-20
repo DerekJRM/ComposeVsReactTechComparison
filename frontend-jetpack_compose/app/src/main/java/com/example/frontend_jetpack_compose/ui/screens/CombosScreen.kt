@@ -1,6 +1,7 @@
 package com.example.frontend_jetpack_compose.ui.screens
 
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
@@ -33,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -59,6 +61,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
+import kotlin.system.measureTimeMillis
 
 data class CarritoItem(
     val combo: Combo,
@@ -104,8 +107,13 @@ fun CombosScreen(
 
     // Load combos on start
     LaunchedEffect(restauranteId) {
-        combos = withContext(Dispatchers.IO) {
-            ComboRepository.getCombosByRestaurante(restauranteId) ?: emptyList()
+        scope.launch {
+            val time = measureTimeMillis {
+                combos = withContext(Dispatchers.IO) {
+                    ComboRepository.getCombosByRestaurante(restauranteId) ?: emptyList()
+                }
+            }
+            println("Tiempo de carga y renderizado de combos: ${time}ms")
         }
     }
 
@@ -340,6 +348,12 @@ fun CombosScreen(
 
     if (selectedCombo != null) {
         val combo = selectedCombo!!
+        val startTime = remember { System.currentTimeMillis() }
+
+        SideEffect {
+            val endTime = System.currentTimeMillis()
+            Log.d("RenderTime", "AlertDialog renderizado en ${endTime - startTime}ms")
+        }
 
         AlertDialog(
             onDismissRequest = {
@@ -416,6 +430,12 @@ fun CombosScreen(
     }
 
     if (comboAEliminar != null) {
+        val startTime = remember { System.currentTimeMillis() }
+
+        SideEffect {
+            val endTime = System.currentTimeMillis()
+            Log.d("RenderTime", "AlertDialog renderizado en ${endTime - startTime}ms")
+        }
         AlertDialog(
             onDismissRequest = { comboAEliminar = null },
             title = { Text("Confirmar eliminación") },

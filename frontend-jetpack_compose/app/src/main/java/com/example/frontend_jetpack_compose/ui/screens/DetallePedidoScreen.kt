@@ -180,11 +180,11 @@ fun DetallePedidoScreen(
                             scope.launch {
                                 withContext(Dispatchers.IO) {
                                     QuejaRepository.createQueja(queja)
-                                    if (calificacion < 3) {
+                                    if (calificacion < 4) {
                                         repartidor?.amonestaciones += 1
                                         repartidor?.amonestaciones?.let {
                                             if (it >= 4) {
-                                                repartidor?.estado = "INACTIVO"
+                                                repartidor?.estado = "SUSPENDIDO"
                                             }
                                         }
                                         RepartidorRepository.updateRepartidor(repartidor ?: return@withContext)

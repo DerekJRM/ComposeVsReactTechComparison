@@ -40,8 +40,10 @@ import com.example.frontend_jetpack_compose.data.repository.ClienteRepository
 import com.example.frontend_jetpack_compose.data.repository.PedidoRepository
 import com.example.frontend_jetpack_compose.data.repository.RepartidorRepository
 import com.example.frontend_jetpack_compose.data.repository.RestauranteRepository
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import kotlin.system.measureTimeMillis
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -56,14 +58,19 @@ fun PedidosScreen(
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(cliente) {
-        if (rol == "CLIENTE") {
-            cliente?.cedula?.let { cedula ->
-                pedidos = PedidoRepository.getPedidosByCliente(cedula)
+        scope.launch {
+            val time = measureTimeMillis {
+                if (rol == "CLIENTE") {
+                    cliente?.cedula?.let { cedula ->
+                        pedidos = PedidoRepository.getPedidosByCliente(cedula)
+                    }
+                } else if (rol == "REPARTIDOR") {
+                    repartidor?.cedula?.let { cedula ->
+                        pedidos = PedidoRepository.getPedidosByRepartidor(cedula)
+                    }
+                }
             }
-        } else if (rol == "REPARTIDOR") {
-            repartidor?.cedula?.let { cedula ->
-                pedidos = PedidoRepository.getPedidosByRepartidor(cedula)
-            }
+            println("Tiempo de carga y renderizado de pedidos: ${time}ms")
         }
     }
 

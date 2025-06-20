@@ -1,0 +1,15 @@
+Tiempos de Renderizado de la lista de Restaurantes:
+Reac-Native
+ - Android: 21.663 ms
+ - Web Browser: 17.300 ms
+
+
+Tiempos de Renderizado de la lista de Pedidos (Modal Popups):
+ - Android: 69.305 ms
+ - Web Browser: 13.294 ms
+
+Tiempos de Renderizado de la lista de combos por Restaurante (Modal Popups Anidados):
+ - Android: 39.075 ms
+ - Web Browser: 8.400 ms
+
+

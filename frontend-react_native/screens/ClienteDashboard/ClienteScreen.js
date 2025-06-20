@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Performance from 'react-native-performance';
 import { 
   View, 
   Text, 
@@ -64,6 +65,70 @@ export default function ClienteScreen({ cliente = {}, onLogout }) {
   const sidebarAnimation = useRef(new Animated.Value(-300)).current;
   const overlayAnimation = useRef(new Animated.Value(0)).current;
 
+
+  const [renderTime, setRenderTime] = useState(0);
+  const renderStartRef = useRef(null);
+
+  // Función para medir con alta precisión
+  const measureRender = () => {
+    if (!restaurantes.length) return;
+
+    // Inicia medición
+    if (!renderStartRef.current) {
+      renderStartRef.current = Performance.now();
+      return;
+    }
+
+    // Finaliza medición
+    const renderEnd = Performance.now();
+    const timeTaken = renderEnd - renderStartRef.current;
+    setRenderTime(timeTaken);
+    renderStartRef.current = null;
+    
+    console.log(`Renderizado: ${timeTaken.toFixed(3)}ms`);
+  };
+
+  const [comboRenderTime, setComboRenderTime] = useState(0);
+  const comboRenderStartRef = useRef(null);
+
+  // Función de medición para combos
+  const measureComboRender = () => {
+    if (!combos.length) return;
+
+    if (!comboRenderStartRef.current) {
+      comboRenderStartRef.current = Performance.now();
+      return;
+    }
+
+    const renderEnd = Performance.now();
+    const timeTaken = renderEnd - comboRenderStartRef.current;
+    setComboRenderTime(timeTaken);
+    comboRenderStartRef.current = null;
+    
+    console.log(`Renderizado Combos: ${timeTaken.toFixed(3)}ms`);
+  };
+
+  // Agrega estos estados
+  const [pedidoRenderTime, setPedidoRenderTime] = useState(0);
+  const pedidoRenderStartRef = useRef(null);
+
+  // Función de medición para pedidos
+  const measurePedidoRender = () => {
+    if (!pedidos.length) return;
+
+    if (!pedidoRenderStartRef.current) {
+      pedidoRenderStartRef.current = Performance.now();
+      return;
+    }
+
+    const renderEnd = Performance.now();
+    const timeTaken = renderEnd - pedidoRenderStartRef.current;
+    setPedidoRenderTime(timeTaken);
+    pedidoRenderStartRef.current = null;
+    
+    console.log(`Renderizado Pedidos: ${timeTaken.toFixed(3)}ms`);
+  };
+
   // Función para obtener el primer nombre
   const getFirstName = () => {
     return safeCliente.nombre?.split(' ')[0] || 'Usuario';
@@ -101,6 +166,14 @@ export default function ClienteScreen({ cliente = {}, onLogout }) {
       ]).start();
     }
   };
+
+  useEffect(() => {
+    if (restaurantes.length > 0) {
+      requestAnimationFrame(() => {
+        measureRender();
+      });
+    }
+  }, [restaurantes]);
 
   useEffect(() => {
     fetchRestaurantes();
@@ -602,6 +675,7 @@ export default function ClienteScreen({ cliente = {}, onLogout }) {
                 data={restaurantes}
                 renderItem={renderRestauranteItem}
                 keyExtractor={item => item.cedulaJuridica}
+                onLayout={measureRender} // Mide cuando el layout está listo
                 contentContainerStyle={isMobile ? styles.mobileListContainer : styles.desktopListContainer}
                 numColumns={isMobile ? 1 : 3}
                 columnWrapperStyle={!isMobile ? styles.desktopColumnWrapper : null}
@@ -660,7 +734,13 @@ export default function ClienteScreen({ cliente = {}, onLogout }) {
             <>
               <FlatList
                 data={combos}
-                renderItem={renderComboItem}
+                renderItem={({ item, index }) => {
+                  if (index === 0) comboRenderStartRef.current = Performance.now();
+                  if (index === combos.length - 1) {
+                    requestAnimationFrame(measureComboRender);
+                  }
+                  return renderComboItem({ item });
+                }}
                 keyExtractor={item => item.id.toString()}
                 contentContainerStyle={styles.listContainer}
                 ListEmptyComponent={
@@ -761,7 +841,13 @@ export default function ClienteScreen({ cliente = {}, onLogout }) {
               ) : (
                 <FlatList
                   data={pedidos}
-                  renderItem={renderPedidoItem}
+                  renderItem={({ item, index }) => {
+                    if (index === 0) pedidoRenderStartRef.current = Performance.now();
+                    if (index === pedidos.length - 1) {
+                      requestAnimationFrame(measurePedidoRender);
+                    }
+                    return renderPedidoItem({ item });
+                  }}
                   keyExtractor={item => item.id.toString()}
                   contentContainerStyle={styles.listContainer}
                   numColumns={isMobile ? 1 : 2}
